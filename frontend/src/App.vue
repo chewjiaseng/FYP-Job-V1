@@ -1,16 +1,17 @@
 <template>
   <div id="app">
-    <ResumeForm />
+    <Navbar />
+    <router-view />
   </div>
 </template>
 
 <script>
-import ResumeForm from './components/ResumeForm.vue';
+import Navbar from './components/Navbar.vue';
 
 export default {
   name: 'App',
   components: {
-    ResumeForm,
+    Navbar,
   },
 };
 </script>

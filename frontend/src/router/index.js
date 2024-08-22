@@ -1,23 +1,40 @@
 import Vue from 'vue';
-import VueRouter from 'vue-router';
-import HomePage from '../components/HomePage.vue'; // Adjust the path to your components
+import Router from 'vue-router';
+import HomePage from '@/components/HomePage.vue';
+import ResumeForm from '@/components/ResumeForm.vue';
+import JobSearch from '@/components/JobSearch.vue';
+import AboutUs from '@/components/AboutUs.vue';
+import Login from '@/components/Login.vue';
 
+Vue.use(Router);
 
-Vue.use(VueRouter);
-
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: HomePage,
-  },
-  // Add more routes here
-];
-
-const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes,
+export default new Router({
+  mode: 'history', // <-- Use history mode here
+  routes: [
+    {
+      path: '/',
+      name: 'HomePage',
+      component: HomePage,
+    },
+    {
+      path: '/job-recommendation',
+      name: 'ResumeForm',
+      component: ResumeForm,
+    },
+    {
+      path: '/job-search',
+      name: 'JobSearch',
+      component: JobSearch,
+    },
+    {
+      path: '/about-us',
+      name: 'AboutUs',
+      component: AboutUs,
+    },
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login,
+    },
+  ],
 });
-
-export default router;

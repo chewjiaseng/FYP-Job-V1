@@ -1,19 +1,27 @@
+<!-- src/components/HomePage.vue -->
 <template>
-  <div>
-    <h1>Home Page</h1>
-    <p>Welcome to the home page!</p>
-  </div>
+  <v-container class="homepage" fill-height>
+    <v-row align="center" justify="center">
+      <v-col class="text-center">
+        <h1>Welcome to Home Page</h1>
+        <v-btn @click="goToResumeForm" class="mt-5" color="black">Go to Resume Form</v-btn>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 export default {
-  name: 'HomePage',
-};
+  methods: {
+    goToResumeForm() {
+      this.$router.push({ name: 'resumeForm' });
+    }
+  }
+}
 </script>
 
 <style scoped>
-/* Add your component-specific styles here */
-h1 {
-  color: #42b983;
+.homepage {
+  background-color: #f5f5f5;
 }
 </style>
