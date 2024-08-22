@@ -1,97 +1,121 @@
 <template>
-    <div class="resume-form">
-      <div class="container" style="margin-top:20px;background:#013a5c;color:white;">
-        <h1 class="text center">Resume Screening AI Base System</h1>
+  <v-container class="resume-form" style="margin-top: 20px;">
+    <v-card color="primary" dark class="pa-5">
+      <v-card-title class="headline text-center">Resume Screening AI Base System</v-card-title>
+      <v-card-text>
         <p>This system supports TXT and PDF files to be uploaded and will work on the following:</p>
-        <ul>
-          <li>Resume Categorization</li>
-          <li>Resume Job Recommendation</li>
-        </ul>
-      </div>
-  
-      <div class="container" style="background:#013a5c;color:white;">
-        <h2>Upload Your Resume</h2>
-        <form @submit.prevent="submitResume">
-          <input type="file" @change="onFileChange" required>
-          <input type="submit" value="Submit">
-        </form>
-  
-        <p v-if="message" class="text-center">{{ message }}</p>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-content>Resume Categorization</v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>Resume Job Recommendation</v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-card-text>
+    </v-card>
+
+    <div style="height: 30px;"></div> <!-- Spacer -->
+
+    <v-card class="mt-5 pa-5" color="primary" >
+      <v-card-title class="headline">Upload Your Resume</v-card-title>
+      <v-card-text>
+        <v-form @submit.prevent="submitResume">
+          <v-file-input v-model="file" label="Choose file" required></v-file-input>
+          <div style="margin-bottom: 20px;"> <!-- Add margin-bottom to the wrapper -->
+            <v-btn type="submit" class="mt-3" style="background-color: #4CAF50; color: white;">Submit</v-btn>
+          </div>
+        </v-form>
+
+        <v-alert v-if="message" type="info" class="text-center mt-3" style="background-color: red ; color: white;">{{ message }}</v-alert>
+
+
         <div v-if="predictedCategory">
-          <br><hr><br>
-          <p class="text-center"><b><strong>Category:</strong></b> {{ predictedCategory }}</p>
-          <p class="text-center"><b><strong>Recommended Job:</strong></b> {{ recommendedJob }}</p>
-          <br><hr><br>
+          <v-divider class="my-5"style="margin-top: 10px;"></v-divider>
+          <p class="text-center" style="margin-top: 15px;"><strong>Category:</strong> {{ predictedCategory }}</p>
+          <p class="text-center"><strong>Recommended Job:</strong> {{ recommendedJob }}</p>
+          <v-divider class="my-5"></v-divider>
         </div>
-      </div>
-  
-      <div class="container" style="background:#013a5c;color:white;">
-        <h2>User List</h2>
-        <table>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-          </tr>
-          <tr v-for="user in users" :key="user.id">
-            <td>{{ user.id }}</td>
-            <td>{{ user.name }}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        file: null,
-        message: '',
-        predictedCategory: '',
-        recommendedJob: '',
-        users: [],
-      };
+      </v-card-text>
+    </v-card>
+    
+    <div style="height: 30px;"></div> <!-- Spacer -->
+
+    <v-card class="mt-5 pa-5" color="primary" dark>
+      <v-card-title class="headline">User List</v-card-title>
+      <v-card-text>
+        <v-simple-table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in users" :key="user.id">
+              <td>{{ user.id }}</td>
+              <td>{{ user.name }}</td>
+            </tr>
+          </tbody>
+        </v-simple-table>
+      </v-card-text>
+    </v-card>
+  </v-container>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      file: null,
+      message: '',
+      predictedCategory: '',
+      recommendedJob: '',
+      users: [],
+    };
+  },
+  methods: {
+    onFileChange(event) {
+      this.file = event.target.files[0];
     },
-    methods: {
-      onFileChange(event) {
-        this.file = event.target.files[0];
-      },
-      async submitResume() {
-        if (!this.file) {
-          this.message = "Please upload a file.";
-          return;
-        }
-  
-        const formData = new FormData();
-        formData.append('resume', this.file);
-  
-        try {
-          const response = await axios.post('/pred', formData);
-          this.predictedCategory = response.data.predicted_category;
-          this.recommendedJob = response.data.recommended_job;
-          this.message = response.data.message || '';
-        } catch (error) {
-          this.message = "Error uploading file. Please try again.";
-        }
-      },
-      async fetchUsers() {
-        try {
-          const response = await axios.get('/users');
-          this.users = response.data.users;
-        } catch (error) {
-          this.message = "Error fetching users.";
-        }
+    async submitResume() {
+      if (!this.file) {
+        this.message = "Please upload a file.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('resume', this.file);
+
+      try {
+        const response = await axios.post('/pred', formData);
+        this.predictedCategory = response.data.predicted_category;
+        this.recommendedJob = response.data.recommended_job;
+        this.message = response.data.message || '';
+      } catch (error) {
+        this.message = "Error uploading file. Please try again.";
       }
     },
-    mounted() {
-      this.fetchUsers();
+    async fetchUsers() {
+      try {
+        const response = await axios.get('/users');
+        this.users = response.data.users;
+      } catch (error) {
+        this.message = "Error fetching users.";
+      }
     }
-  };
-  </script>
-  
-  <style scoped>
-  /* Add your custom styles here */
-  </style>
-  
+  },
+  mounted() {
+    this.fetchUsers();
+  }
+};
+</script>
+
+<style scoped>
+.resume-form {
+  max-width: 800px;
+  margin: auto;
+}
+</style>

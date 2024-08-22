@@ -1,8 +1,9 @@
 {
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "axios": "^1.7.4",
     "vue-router": "^3.6.5",
-    "vuetify": "^2.6.0"
+    "vuetify": "^2.7.2"
   },
   "devDependencies": {
     "@vue/cli-service": "^5.0.8",
