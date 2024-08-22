@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from PyPDF2 import PdfReader
 import re
 import pickle
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Database connection URI
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://testdatabase_5wud_user:20bCBu7dXR8FQc6FWNUQ3ZQE9tRUCt55@dpg-cr23a9ggph6c73bf5hsg-a.oregon-postgres.render.com/testdatabase_5wud'
@@ -67,7 +69,6 @@ def resume():
 
 @app.route('/pred', methods=['POST'])
 def pred():
-    # Process the PDF or TXT file and make prediction
     if 'resume' in request.files:
         file = request.files['resume']
         filename = file.filename
@@ -77,14 +78,18 @@ def pred():
         elif filename.endswith('.txt'):
             text = file.read().decode('utf-8')
         else:
-            return render_template('resume.html', message="Invalid file format. Please upload a PDF or TXT file.")
+            return jsonify({'message': "Invalid file format. Please upload a PDF or TXT file."})
 
         predicted_category = predict_category(text)
         recommended_job = job_recommendation(text)
 
-        return render_template('resume.html', predicted_category=predicted_category,  recommended_job= recommended_job)
+        return jsonify({
+            'predicted_category': predicted_category,
+            'recommended_job': recommended_job,
+            'message': ''
+        })
     else:
-        return render_template("resume.html", message="No resume file uploaded.")
+        return jsonify({'message': "No resume file uploaded."})
 
 if __name__ == "__main__":
     app.run(debug=True)
