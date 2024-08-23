@@ -5,6 +5,7 @@ import ResumeForm from '@/components/ResumeForm.vue';
 import JobSearch from '@/components/JobSearch.vue';
 import AboutUs from '@/components/AboutUs.vue';
 import Login from '@/components/Login.vue';
+import JobProvider from '../components/JobProvider.vue';
 
 Vue.use(Router);
 
@@ -36,5 +37,10 @@ export default new Router({
       name: 'Login',
       component: Login,
     },
+    {
+      path: '/job-provide',
+      name: 'JobProvider',
+      component: JobProvider,
+    }
   ],
 });
