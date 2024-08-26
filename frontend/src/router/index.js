@@ -5,12 +5,14 @@ import ResumeForm from '@/components/ResumeForm.vue';
 import JobSearch from '@/components/JobSearch.vue';
 import AboutUs from '@/components/AboutUs.vue';
 import Login from '@/components/Login.vue';
-import JobProvider from '../components/JobProvider.vue';
+import JobProvider from '@/components/JobProvider.vue';
+import SignUp from '@/components/SignUp.vue';
+import SeekerHome from '@/components/jobseekers/SeekerHome.vue';  // Import SeekerHome
 
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history', // <-- Use history mode here
+  mode: 'history', // Use history mode here
   routes: [
     {
       path: '/',
@@ -41,6 +43,16 @@ export default new Router({
       path: '/job-provide',
       name: 'JobProvider',
       component: JobProvider,
+    },
+    {
+      path: '/signup',
+      name: 'SignUp',
+      component: SignUp,
+    },
+    {
+      path: '/seeker-home',  // Add the new route
+      name: 'SeekerHome',
+      component: SeekerHome,
     }
   ],
 });

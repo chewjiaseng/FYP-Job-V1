@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Navbar />
+    <Navbar v-if="showNavbar" />
     <router-view />
   </div>
 </template>
@@ -12,6 +12,12 @@ export default {
   name: 'App',
   components: {
     Navbar,
+  },
+  computed: {
+    showNavbar() {
+      // Hide Navbar for specific routes
+      return !['/job-recommendation'].includes(this.$route.path);
+    },
   },
 };
 </script>
