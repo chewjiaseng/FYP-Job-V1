@@ -15,6 +15,10 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://testdatabase_5wud_user:20bCBu7dXR8FQc6FWNUQ3ZQE9tRUCt55@dpg-cr23a9ggph6c73bf5hsg-a.oregon-postgres.render.com/testdatabase_5wud'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+hashed_password = generate_password_hash("admin")
+print( "THIS IS ADMIN PASSWORD"+hashed_password)
+
 db = SQLAlchemy(app)
 
 # Example: Define a simple model
@@ -131,6 +135,14 @@ def login():
     password = data.get('password')
     role = data.get('role')
 
+    # Admin login logic
+    if identifier == "admin":
+        user = User.query.filter_by(username="admin").first()
+        if user and check_password_hash(user.password, password):
+            return jsonify({"message": "Login successful!", "redirect": "/admin-home"}), 200
+        else:
+            return jsonify({"error": "Invalid admin credentials."}), 401
+
     if not identifier or not password or not role:
         return jsonify({"error": "Please fill out all required fields."}), 400
 
@@ -140,6 +152,8 @@ def login():
     if user and check_password_hash(user.password, password) and user.role == role:
         if role == "Job Seeker":
             return jsonify({"message": "Login successful!", "redirect": "/seeker-home"}), 200
+        elif role == "Job Provider":
+            return jsonify({"message": "Login successful!", "redirect": "/provider-home"}), 200
         else:
             return jsonify({"error": "Invalid role selected."}), 403
     else:

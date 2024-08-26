@@ -1,5 +1,6 @@
 <template>
   <v-container class="homepage" fluid fill-height @mousemove="handleMouseMove">
+    <Navbar />
     <!-- Main background content -->
     <div class="background" :class="{ fadeOut: isFadingOut && isImageOneVisible }"></div>
 
@@ -24,7 +25,11 @@
 </template>
 
 <script>
+import Navbar from './Navbar.vue';
 export default {
+  components: {
+    Navbar,
+  },
   data() {
     return {
       isFadingOut: false,
