@@ -4,6 +4,9 @@ import re
 import pickle
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash
+
 
 app = Flask(__name__)
 CORS(app)
@@ -12,12 +15,20 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://testdatabase_5wud_user:20bCBu7dXR8FQc6FWNUQ3ZQE9tRUCt55@dpg-cr23a9ggph6c73bf5hsg-a.oregon-postgres.render.com/testdatabase_5wud'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
+hashed_password = generate_password_hash("admin")
+print( "THIS IS ADMIN PASSWORD"+hashed_password)
+
 db = SQLAlchemy(app)
 
 # Example: Define a simple model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
+    username = db.Column(db.String(80), nullable=False, unique=True)
+    email = db.Column(db.String(120), nullable=False, unique=True)
+    password = db.Column(db.String(256), nullable=False)
+    role = db.Column(db.String(50), nullable=True)
+
 
 # New route to display users
 @app.route("/users")
@@ -90,6 +101,63 @@ def pred():
         })
     else:
         return jsonify({'message': "No resume file uploaded."})
+    
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role')
+
+    if not username or not email or not password:
+        return jsonify({"error": "Please fill out all required fields."}), 400
+
+    # Use default PBKDF2 hashing
+    hashed_password = generate_password_hash(password)
+
+    # Create a new user object
+    new_user = User(username=username, email=email, password=hashed_password, role=role)
+
+    try:
+        db.session.add(new_user)
+        db.session.commit()
+        return jsonify({"message": "User created successfully!"}), 201
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error occurred: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    identifier = data.get('identifier')  # This can be either username or email
+    password = data.get('password')
+    role = data.get('role')
+
+    # Admin login logic
+    if identifier == "admin":
+        user = User.query.filter_by(username="admin").first()
+        if user and check_password_hash(user.password, password):
+            return jsonify({"message": "Login successful!", "redirect": "/admin-home"}), 200
+        else:
+            return jsonify({"error": "Invalid admin credentials."}), 401
+
+    if not identifier or not password or not role:
+        return jsonify({"error": "Please fill out all required fields."}), 400
+
+    # Query the database for a user matching the provided username or email
+    user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
+
+    if user and check_password_hash(user.password, password) and user.role == role:
+        if role == "Job Seeker":
+            return jsonify({"message": "Login successful!", "redirect": "/seeker-home"}), 200
+        elif role == "Job Provider":
+            return jsonify({"message": "Login successful!", "redirect": "/provider-home"}), 200
+        else:
+            return jsonify({"error": "Invalid role selected."}), 403
+    else:
+        return jsonify({"error": "Invalid credentials."}), 401
 
 if __name__ == "__main__":
     app.run(debug=True)

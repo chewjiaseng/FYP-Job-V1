@@ -1,17 +1,12 @@
 <template>
   <div id="app">
-    <ResumeForm />
+    <router-view />
   </div>
 </template>
 
 <script>
-import ResumeForm from './components/ResumeForm.vue';
-
 export default {
   name: 'App',
-  components: {
-    ResumeForm,
-  },
 };
 </script>
 
