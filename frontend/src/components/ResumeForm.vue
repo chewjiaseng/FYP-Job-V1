@@ -1,6 +1,6 @@
 <template>
   <div>
-    <NavbarSeeker />
+    <NavbarSeeker :username="username" />
     <v-container class="resume-form" style="margin-top: 20px;">
       <v-card color="primary" dark class="pa-5">
         <v-card-title class="headline text-center">Resume Screening AI Base System</v-card-title>
@@ -115,6 +115,7 @@ export default {
   },
   mounted() {
     this.fetchUsers();
+    this.username = sessionStorage.getItem('username');
   }
 };
 </script>

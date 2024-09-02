@@ -9,12 +9,12 @@ import JobProvider from '@/components/JobProvider.vue';
 import SignUp from '@/components/SignUp.vue';
 import SeekerHome from '@/components/jobseekers/SeekerHome.vue';  // Import SeekerHome
 import ProviderHome from '@/components/jobproviders/ProviderHome.vue';  // Import ProviderHome
+import CreateJob from '@/components/jobproviders/CreateJob.vue';  // Import CreateJob
 import AdminHome from '@/components/admin/AdminHome.vue'; // Import AdminHome
-
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: 'history', // Use history mode here
   routes: [
     {
@@ -26,6 +26,7 @@ export default new Router({
       path: '/job-recommendation',
       name: 'ResumeForm',
       component: ResumeForm,
+      meta: { requiresAuth: true }
     },
     {
       path: '/job-search',
@@ -53,19 +54,46 @@ export default new Router({
       component: SignUp,
     },
     {
-      path: '/seeker-home',  // Add the new route
+      path: '/seeker-home',
       name: 'SeekerHome',
       component: SeekerHome,
+      meta: { requiresAuth: true } 
     },
     {
-      path: '/provider-home',  // Add the new route for ProviderHome
+      path: '/provider-home',
       name: 'ProviderHome',
       component: ProviderHome,
+      meta: { requiresAuth: true }  // Add meta field to require authentication
     },
     {
       path: '/admin-home',
       name: 'AdminHome',
       component: AdminHome,
+    },
+    {
+      path: '/create-job',
+      name: 'CreateJob',
+      component: CreateJob,
     }
   ],
 });
+
+// Add navigation guard
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('isAuthenticated'); // Check if the user is authenticated
+  const username = sessionStorage.getItem('username');
+
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (isAuthenticated && username) {
+      next(); // Allow access if authenticated
+    } else {
+      next('/login'); // Redirect to login if not authenticated
+    }
+  } else {
+    next(); // Always allow access if the route does not require authentication
+  }
+}
+
+);
+
+export default router;

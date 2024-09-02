@@ -4,24 +4,55 @@ import re
 import pickle
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from werkzeug.security import generate_password_hash
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+from flask_session import Session
+import os
+import time
+import logging
 
-
+# Initialize Flask app
 app = Flask(__name__)
-CORS(app)
 
-# Database connection URI
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# CORS Configuration
+CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
+
+# Secret key for sessions (use environment variables in production)
+app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
+
+# Flask-Session Configuration
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = os.path.join(app.root_path, 'flask_session')
+app.config['SESSION_PERMANENT'] = False  # Optional: session expiration
+os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
+Session(app)
+
+# Define the path to the session folder
+session_folder = 'D:/UPM registration/fyp local path github/FYP-Job-V1/backend flask/flask_session'
+now = time.time()
+
+# Delete session files older than 6 hours (21,600 seconds)
+for filename in os.listdir(session_folder):
+    file_path = os.path.join(session_folder, filename)
+    if os.path.getmtime(file_path) < now - 21600:  # 6 hours = 21600 seconds
+        os.remove(file_path)
+
+# Initialize Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = '/login'  # Redirect to login if not authenticated
+
+# Database connection external URI
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://testdatabase_5wud_user:20bCBu7dXR8FQc6FWNUQ3ZQE9tRUCt55@dpg-cr23a9ggph6c73bf5hsg-a.oregon-postgres.render.com/testdatabase_5wud'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-
-hashed_password = generate_password_hash("admin")
-print( "THIS IS ADMIN PASSWORD"+hashed_password)
-
+# Initialize SQLAlchemy
 db = SQLAlchemy(app)
 
-# Example: Define a simple model
+# Define User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
@@ -29,20 +60,50 @@ class User(db.Model):
     password = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(50), nullable=True)
 
+    # Required for Flask-Login
+    @property
+    def is_authenticated(self):
+        return True
 
-# New route to display users
-@app.route("/users")
-def users():
-    all_users = User.query.all()
-    return render_template('resume.html', users=all_users)
+    @property
+    def is_active(self):
+        # Assuming all users are active by default
+        return True
 
-# Load models===========================================================================================================
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.id)
+
+# User Loader
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Example: Define a simple model
+# (Assuming you have a Job model defined elsewhere)
+class Job(db.Model):
+    __tablename__ = 'jobs'  # Correct table name
+    id = db.Column(db.Integer, primary_key=True)
+    job_name = db.Column(db.String(100), nullable=False)
+    job_provider_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    job_category = db.Column(db.String(100), nullable=False)
+    salary = db.Column(db.String(255), nullable=False)
+    working_place = db.Column(db.String(100), nullable=False)
+    working_hours = db.Column(db.String(50), nullable=False)
+    job_description = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)  # Make sure to match your column type
+
+
+# Load models for prediction
 rf_classifier_categorization = pickle.load(open('models/rf_classifier_categorization.pkl', 'rb'))
 tfidf_vectorizer_categorization = pickle.load(open('models/tfidf_vectorizer_categorization.pkl', 'rb'))
 rf_classifier_job_recommendation = pickle.load(open('models/rf_classifier_job_recommendation.pkl', 'rb'))
 tfidf_vectorizer_job_recommendation = pickle.load(open('models/tfidf_vectorizer_job_recommendation.pkl', 'rb'))
 
-# Clean resume==========================================================================================================
+# Clean resume function
 def cleanResume(txt):
     cleanText = re.sub(r'http\S+\s', ' ', txt)
     cleanText = re.sub(r'RT|cc', ' ', cleanText)
@@ -53,16 +114,15 @@ def cleanResume(txt):
     cleanText = re.sub(r'\s+', ' ', cleanText)
     return cleanText
 
-# Prediction and Category Name
+# Prediction functions
 def predict_category(resume_text):
     resume_text = cleanResume(resume_text)
     resume_tfidf = tfidf_vectorizer_categorization.transform([resume_text])
     predicted_category = rf_classifier_categorization.predict(resume_tfidf)[0]
     return predicted_category
 
-# Prediction and Category Name
 def job_recommendation(resume_text):
-    resume_text= cleanResume(resume_text)
+    resume_text = cleanResume(resume_text)
     resume_tfidf = tfidf_vectorizer_job_recommendation.transform([resume_text])
     recommended_job = rf_classifier_job_recommendation.predict(resume_tfidf)[0]
     return recommended_job
@@ -74,6 +134,7 @@ def pdf_to_text(file):
         text += reader.pages[page].extract_text()
     return text
 
+# Routes
 @app.route("/")
 def resume():
     return render_template('resume.html')
@@ -89,7 +150,7 @@ def pred():
         elif filename.endswith('.txt'):
             text = file.read().decode('utf-8')
         else:
-            return jsonify({'message': "Invalid file format. Please upload a PDF or TXT file."})
+            return jsonify({'message': "Invalid file format. Please upload a PDF or TXT file."}), 400
 
         predicted_category = predict_category(text)
         recommended_job = job_recommendation(text)
@@ -98,10 +159,10 @@ def pred():
             'predicted_category': predicted_category,
             'recommended_job': recommended_job,
             'message': ''
-        })
+        }), 200
     else:
-        return jsonify({'message': "No resume file uploaded."})
-    
+        return jsonify({'message': "No resume file uploaded."}), 400
+
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
@@ -122,10 +183,11 @@ def signup():
     try:
         db.session.add(new_user)
         db.session.commit()
+        app.logger.info(f"User {username} created successfully.")
         return jsonify({"message": "User created successfully!"}), 201
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error occurred: {e}")
+        app.logger.error(f"Error occurred during signup: {e}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/login', methods=['POST'])
@@ -135,29 +197,123 @@ def login():
     password = data.get('password')
     role = data.get('role')
 
-    # Admin login logic
-    if identifier == "admin":
-        user = User.query.filter_by(username="admin").first()
-        if user and check_password_hash(user.password, password):
-            return jsonify({"message": "Login successful!", "redirect": "/admin-home"}), 200
-        else:
-            return jsonify({"error": "Invalid admin credentials."}), 401
+    if not identifier or not password:
+        app.logger.warning("Missing identifier or password.")
+        return jsonify({"error": "Please provide both identifier and password."}), 400
 
-    if not identifier or not password or not role:
-        return jsonify({"error": "Please fill out all required fields."}), 400
-
-    # Query the database for a user matching the provided username or email
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
 
-    if user and check_password_hash(user.password, password) and user.role == role:
-        if role == "Job Seeker":
-            return jsonify({"message": "Login successful!", "redirect": "/seeker-home"}), 200
-        elif role == "Job Provider":
-            return jsonify({"message": "Login successful!", "redirect": "/provider-home"}), 200
+    if user and check_password_hash(user.password, password):
+        # Admin logic
+        if user.username == 'admin' and password == 'admin':
+            login_user(user)
+            app.logger.info(f"Admin user {user.username} logged in successfully.")
+            return jsonify({
+                "message": "Login successful!",
+                "redirect": '/admin-home',
+                "username": user.username,
+                "role": user.role
+            }), 200
+        
+        # Check if role matches
+        if user.role == role:
+            login_user(user)
+            app.logger.info(f"User {user.username} logged in successfully.")
+            redirect_url = '/seeker-home' if user.role == 'Job Seeker' else '/provider-home'
+            return jsonify({
+                "message": "Login successful!",
+                "redirect": redirect_url,
+                "username": user.username,
+                "role": user.role
+            }), 200
         else:
-            return jsonify({"error": "Invalid role selected."}), 403
+            app.logger.warning(f"Role mismatch for user: {identifier}")
+            return jsonify({"error": "Invalid role."}), 401
     else:
+        app.logger.warning(f"Failed login attempt for identifier: {identifier}")
         return jsonify({"error": "Invalid credentials."}), 401
 
+@app.route('/user-info', methods=['GET'])
+@login_required
+def user_info():
+    if current_user.is_authenticated:
+        return jsonify({"username": current_user.username, "role": current_user.role, "user_id": current_user.id }), 200
+    else:
+        return jsonify({"error": "User not authenticated."}), 401
+
+@app.route('/logout', methods=['GET'])
+@login_required
+def logout():
+    logout_user()
+    app.logger.info(f"User logged out successfully.")
+    return jsonify({"message": "Logged out successfully!"}), 200
+
+# Route to handle job creation by job providers
+@app.route('/create-job', methods=['POST'])
+@login_required
+def create_job():
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+
+    data = request.json
+    job_name = data.get('job_name')
+    job_category = data.get('job_category')
+    salary = data.get('salary')
+    working_place = data.get('working_place')
+    working_hours = data.get('working_hours')
+    job_description = data.get('job_description')
+
+    if not all([job_name, job_category, salary, working_place, working_hours, job_description]):
+        return jsonify({"error": "Missing fields in request data"}), 400
+
+    job_provider_id = current_user.id
+
+    new_job = Job(
+        job_name=job_name,
+        job_provider_id=job_provider_id,
+        job_category=job_category,
+        salary=salary,
+        working_place=working_place,
+        working_hours=working_hours,
+        job_description=job_description
+    )
+
+    try:
+        db.session.add(new_job)
+        db.session.commit()
+        return jsonify({"message": "Job created successfully!"}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Error occurred during job creation: " + str(e)}), 500
+    
+@app.route('/provider-jobs', methods=['GET'])
+@login_required
+def provider_jobs():
+    user_id = current_user.id
+    jobs = Job.query.filter_by(job_provider_id=user_id).all()
+    
+    # Convert jobs to a list of dictionaries
+    jobs_list = [{
+        'id': job.id,
+        'job_name': job.job_name,
+        'job_category': job.job_category,
+        'salary': job.salary,
+        'working_place': job.working_place,
+        'working_hours': job.working_hours,
+        'job_description': job.job_description,
+        'created_at': job.created_at
+    } for job in jobs]
+    
+    return jsonify(jobs_list), 200
+
+# Route to display users (for debugging purposes)
+@app.route("/users", methods=['GET'])
+def users():
+    all_users = User.query.all()
+    users_data = [{"username": user.username, "email": user.email, "role": user.role} for user in all_users]
+    return jsonify(users_data), 200
+
 if __name__ == "__main__":
+    # Ensure the session directory exists
+    os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
     app.run(debug=True)
