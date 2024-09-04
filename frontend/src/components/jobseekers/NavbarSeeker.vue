@@ -67,7 +67,7 @@ export default {
 }
 
 .custom-button {
-  margin-top: 20px;
+  margin-top: 5px;
   color: rgb(0, 0, 0); /* Customize button text color */
   font-size: 1rem; /* Customize button text size */
 }
@@ -90,7 +90,7 @@ export default {
   display: flex;
   align-items: center; /* Vertically center-aligns the username */
   justify-content: flex-end; /* Pushes the username to the right */
-  margin-top: 20px;
+  margin-top: 5px;
   height: 100% /* Align user text to the right */
 }
 

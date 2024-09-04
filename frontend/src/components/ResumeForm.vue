@@ -1,8 +1,9 @@
 <template>
+  <v-app>
   <div>
     <NavbarSeeker :username="username" />
     <v-container class="resume-form" style="margin-top: 20px;">
-      <v-card color="primary" dark class="pa-5">
+      <v-card color="black" dark class="pa-5">
         <v-card-title class="headline text-center">Resume Screening AI Base System</v-card-title>
         <v-card-text>
           <p>This system supports TXT and PDF files to be uploaded and will work on the following:</p>
@@ -19,7 +20,7 @@
 
       <div style="height: 30px;"></div> <!-- Spacer -->
 
-      <v-card class="mt-5 pa-5" color="primary" >
+      <v-card class="mt-5 pa-5" color="white" >
         <v-card-title class="headline">Upload Your Resume</v-card-title>
         <v-card-text>
           <v-form @submit.prevent="submitResume">
@@ -63,6 +64,7 @@
       </v-card>
     </v-container>
   </div>
+</v-app>
 </template>
 
 <script>

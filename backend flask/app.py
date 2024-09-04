@@ -10,6 +10,7 @@ from flask_session import Session
 import os
 import time
 import logging
+from werkzeug.utils import secure_filename
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -95,7 +96,20 @@ class Job(db.Model):
     working_hours = db.Column(db.String(50), nullable=False)
     job_description = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)  # Make sure to match your column type
+    provider_name = db.Column(db.String(255), nullable=False)
 
+class Application(db.Model):
+    __tablename__ = 'applications'
+    id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'), nullable=False)
+    job_seeker_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    identification_card = db.Column(db.String(100), nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
+    hp_number = db.Column(db.String(15), nullable=False)
+    resume_pdf = db.Column(db.LargeBinary, nullable=True)
+    applied_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
+    job = db.relationship('Job', backref='applications', lazy=True)
 
 # Load models for prediction
 rf_classifier_categorization = pickle.load(open('models/rf_classifier_categorization.pkl', 'rb'))
@@ -267,10 +281,12 @@ def create_job():
         return jsonify({"error": "Missing fields in request data"}), 400
 
     job_provider_id = current_user.id
+    provider_name = current_user.username  # Get the username of the current user
 
     new_job = Job(
         job_name=job_name,
         job_provider_id=job_provider_id,
+        provider_name=provider_name,
         job_category=job_category,
         salary=salary,
         working_place=working_place,
@@ -313,7 +329,7 @@ def users():
     users_data = [{"username": user.username, "email": user.email, "role": user.role} for user in all_users]
     return jsonify(users_data), 200
 
-# Updating job details for Job provider
+# Updating job details for Job provide
 @app.route('/update-job/<int:job_id>', methods=['PUT'])
 @login_required
 def update_job(job_id):
@@ -354,7 +370,76 @@ def delete_job(job_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Error occurred during job deletion: " + str(e)}), 500
+    
+#get all the jobs to seeker
+@app.route('/jobs', methods=['GET'])
+@login_required
+def get_all_jobs():
+    jobs = Job.query.all()
+    
+    jobs_list = [{
+        'id': job.id,
+        'job_name': job.job_name,
+        'job_category': job.job_category,
+        'salary': job.salary,
+        'working_place': job.working_place,
+        'working_hours': job.working_hours,
+        'job_description': job.job_description,
+        'created_at': job.created_at,
+        'provider_name': job.provider_name
+    } for job in jobs]
+    
+    return jsonify(jobs_list), 200
 
+ALLOWED_EXTENSIONS = {'pdf'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+#Apply job
+@app.route('/apply', methods=['POST'])
+@login_required
+def apply():
+    resume_pdf_content = None
+    
+    # Check if a file is uploaded
+    if 'resume_pdf' in request.files:
+        resume_pdf = request.files['resume_pdf']
+        if resume_pdf and allowed_file(resume_pdf.filename):
+            filename = secure_filename(resume_pdf.filename)
+            resume_pdf_content = resume_pdf.read()
+
+    data = {
+        'job_id': request.form.get('job_id'),
+        'name': request.form.get('name'),
+        'identification_card': request.form.get('identification_card'),
+        'gender': request.form.get('gender'),
+        'hp_number': request.form.get('hp_number'),
+    }
+
+    if not all(data.values()):
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+
+    # Create the application object with optional resume_pdf_content
+    application = Application(
+        job_id=data['job_id'],
+        job_seeker_id=current_user.id,
+        name=data['name'],
+        identification_card=data['identification_card'],
+        gender=data['gender'],
+        hp_number=data['hp_number'],
+        resume_pdf=resume_pdf_content  # Can be None if no PDF is uploaded
+    )
+
+    try:
+        db.session.add(application)
+        db.session.commit()
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        return jsonify({'success': False, 'message': 'Failed to apply'}), 500
+        
 if __name__ == "__main__":
     # Ensure the session directory exists
     os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
