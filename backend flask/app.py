@@ -313,6 +313,48 @@ def users():
     users_data = [{"username": user.username, "email": user.email, "role": user.role} for user in all_users]
     return jsonify(users_data), 200
 
+# Updating job details for Job provider
+@app.route('/update-job/<int:job_id>', methods=['PUT'])
+@login_required
+def update_job(job_id):
+    job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
+    
+    if not job:
+        return jsonify({"error": "Job not found or you're not authorized to update this job."}), 404
+    
+    data = request.json
+    
+    job.job_name = data.get('job_name', job.job_name)
+    job.job_category = data.get('job_category', job.job_category)
+    job.salary = data.get('salary', job.salary)
+    job.working_place = data.get('working_place', job.working_place)
+    job.working_hours = data.get('working_hours', job.working_hours)
+    job.job_description = data.get('job_description', job.job_description)
+    
+    try:
+        db.session.commit()
+        return jsonify({"message": "Job updated successfully!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Error occurred during job update: " + str(e)}), 500
+
+# To delete job for Job providers
+@app.route('/delete-job/<int:job_id>', methods=['DELETE'])
+@login_required
+def delete_job(job_id):
+    job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
+    
+    if not job:
+        return jsonify({"error": "Job not found or you're not authorized to delete this job."}), 404
+    
+    try:
+        db.session.delete(job)
+        db.session.commit()
+        return jsonify({"message": "Job deleted successfully!"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Error occurred during job deletion: " + str(e)}), 500
+
 if __name__ == "__main__":
     # Ensure the session directory exists
     os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)

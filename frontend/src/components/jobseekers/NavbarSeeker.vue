@@ -37,8 +37,11 @@ export default {
     logout() {
       this.$store.dispatch('updateUsername', ''); // Clear username from Vuex store
       sessionStorage.removeItem('username'); // Clear username from sessionStorage
+      sessionStorage.removeItem("userId");
+      sessionStorage.removeItem("username");
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('userRole'); // Clear user role
+
 
       this.$router.push('/login'); // Redirect to login page
     }
