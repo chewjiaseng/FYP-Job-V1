@@ -47,7 +47,7 @@ login_manager.init_app(app)
 login_manager.login_view = '/login'  # Redirect to login if not authenticated
 
 # Database connection external URI
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://testdatabase_5wud_user:20bCBu7dXR8FQc6FWNUQ3ZQE9tRUCt55@dpg-cr23a9ggph6c73bf5hsg-a.oregon-postgres.render.com/testdatabase_5wud'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://test2database2_user:Q5bjzhcPfYJR4KUuolAy6YfXyd6Qtfj0@dpg-crjqh65ds78s73ed1ns0-a.oregon-postgres.render.com/test2database2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
@@ -439,7 +439,58 @@ def apply():
         db.session.rollback()
         print(e)
         return jsonify({'success': False, 'message': 'Failed to apply'}), 500
-        
+
+from sqlalchemy import func    
+@app.route('/jobs', methods=['POST'])
+@login_required
+def fetch_jobs():
+    if 'resume' not in request.files:
+        return jsonify({"message": "No resume file provided."}), 400
+    
+    resume = request.files['resume']
+    
+    # Check if the file is a PDF or a text file
+    if resume.filename.endswith('.pdf'):
+        resume_text = pdf_to_text(resume)
+    else:
+        resume_text = resume.read().decode('utf-8')
+
+    # Predict the category and recommend a job based on resume content
+    predicted_category = predict_category(resume_text)
+    recommended_job = job_recommendation(resume_text)
+
+    print(f"Predicted Category: {predicted_category}")  # Debugging log
+    
+    # Fetch jobs based on the predicted category
+    jobs = Job.query.filter(func.lower(Job.job_category) == func.lower(predicted_category)).all()
+    #jobs = Job.query.filter(func.lower(Job.job_category) == func.lower(predicted_category.lower())).all()
+
+    
+    jobs_list = [{
+        'id': job.id,
+        'job_name': job.job_name,
+        'job_category': job.job_category,
+        'salary': job.salary,
+        'working_place': job.working_place,
+        'working_hours': job.working_hours,
+        'job_description': job.job_description,
+        'created_at': job.created_at,
+        'provider_name': job.provider_name
+    } for job in jobs]
+    
+    # Return the predicted category and recommended job, even if no jobs are found
+    response_data = {
+        "predicted_category": predicted_category,
+        "recommended_job": recommended_job,
+        "jobs": jobs_list,
+    }
+
+    if not jobs_list:  # No jobs found for the predicted category
+        response_data["message"] = f"Sorry, currently we don't have jobs in the '{predicted_category}' category."
+
+    return jsonify(response_data), 200
+
+
 if __name__ == "__main__":
     # Ensure the session directory exists
     os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
