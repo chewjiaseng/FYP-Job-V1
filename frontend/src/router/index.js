@@ -74,6 +74,12 @@ const router = new Router({
       path: '/create-job',
       name: 'CreateJob',
       component: CreateJob,
+    },
+    {
+      path: '/view-applications',
+      name: 'ViewApplications',
+      component: () => import('@/components/jobproviders/ViewApplications.vue'),  // Create this component
+      meta: { requiresAuth: true }  // Protect the route with authentication
     }
   ],
 });

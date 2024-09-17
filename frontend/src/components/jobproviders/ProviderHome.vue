@@ -4,9 +4,19 @@
       <h1>Welcome, {{ username }} (ID: {{ userId }})</h1>
 
       <!-- Create New Job Button -->
-      <v-btn @click="goToCreateJob" class="create-job-button" color="green">
+      <!-- <v-btn @click="goToCreateJob" class="create-job-button" color="green">
         Create New Job
-      </v-btn>
+      </v-btn> -->
+
+      <!-- Create New Job Button and View Applications Button -->
+      <div class="action-buttons">
+        <v-btn @click="goToCreateJob" class="create-job-button" color="green">
+          Create New Job
+        </v-btn>
+        <v-btn @click="goToViewApplications" class="view-applications-button" color="blue">
+          View Applications
+        </v-btn>
+      </div>
 
       <!-- Logout Button -->
       <v-btn
@@ -194,6 +204,9 @@ export default {
     goToCreateJob() {
       this.$router.push("/create-job");
     },
+    goToViewApplications() {
+      this.$router.push("/view-applications"); // This will redirect to the new page
+    },
     logout() {
       axios
         .get("http://localhost:5000/logout", { withCredentials: true })
@@ -248,6 +261,14 @@ export default {
   padding: 0 !important;
   display: flex !important;
   justify-content: center !important;
+}
+
+.view-applications-button {
+  /* position: absolute; */
+  top: 10px;
+  left: 10px;
+  background-color: blue !important;
+  color: white !important;
 }
 
 /* Flexbox to control content inside snackbar */

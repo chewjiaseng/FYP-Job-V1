@@ -12,6 +12,7 @@ import time
 import logging
 from werkzeug.utils import secure_filename
 
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -19,7 +20,8 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
 # CORS Configuration
-CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
+# CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
+CORS(app, supports_credentials=True)
 
 # Secret key for sessions (use environment variables in production)
 app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
@@ -109,6 +111,7 @@ class Application(db.Model):
     hp_number = db.Column(db.String(15), nullable=False)
     resume_pdf = db.Column(db.LargeBinary, nullable=True)
     applied_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
+    status = db.Column(db.String(50), nullable=False, default='Pending')
     job = db.relationship('Job', backref='applications', lazy=True)
 
 # Load models for prediction
@@ -439,7 +442,8 @@ def apply():
         db.session.rollback()
         print(e)
         return jsonify({'success': False, 'message': 'Failed to apply'}), 500
-
+    
+#For recommendation show the recommend jobs, retrieve the jobs based on predicted category
 from sqlalchemy import func    
 @app.route('/jobs', methods=['POST'])
 @login_required
@@ -490,6 +494,85 @@ def fetch_jobs():
 
     return jsonify(response_data), 200
 
+#For the Job provider to view the applications based on their own jobs 
+import base64
+from sqlalchemy import text
+
+@app.route('/provider-applications', methods=['GET'])
+def get_provider_applications():
+    try:
+        if not current_user.is_authenticated:
+            return jsonify({"error": "User not authenticated."}), 401
+
+        provider_id = current_user.id
+
+        query = text("""
+        SELECT 
+            a.id AS application_id,
+            a.name AS applicant_name,
+            a.identification_card,
+            a.gender,
+            a.hp_number,
+            a.status,
+            a.applied_at,
+            j.job_name,
+            j.job_category,
+            j.working_place,
+            u.username AS job_provider_name,
+            a.resume_pdf
+        FROM 
+            applications a
+        JOIN 
+            jobs j ON a.job_id = j.id
+        JOIN 
+            "user" u ON j.job_provider_id = u.id
+        WHERE 
+            u.id = :provider_id;
+        """)
+
+        result = db.session.execute(query, {'provider_id': provider_id})
+
+        applications = result.mappings().all()
+
+        response = []
+        for row in applications:
+            row_dict = dict(row)
+            # Encode resume_pdf as base64 if it exists
+            if row.resume_pdf:
+                row_dict['resume_pdf'] = base64.b64encode(row.resume_pdf).decode('utf-8')
+            response.append(row_dict)
+
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/application/<int:application_id>/status', methods=['PUT'])
+def update_application_status(application_id):
+    try:
+        if not current_user.is_authenticated:
+            return jsonify({"error": "User not authenticated."}), 401
+
+        # Get new status from the request
+        new_status = request.json.get('status')
+        if new_status not in ['Pending', 'Received']:
+            return jsonify({"error": "Invalid status."}), 400
+
+        # Fetch the application using db.session.get (this is the recommended method for SQLAlchemy 2.x)
+        application = db.session.get(Application, application_id)
+        if not application:
+            return jsonify({"error": "Application not found."}), 404
+
+        # Update the status of the application
+        application.status = new_status
+
+        # Commit the changes to the database
+        db.session.commit()
+
+        return jsonify({"message": "Status updated successfully."})
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     # Ensure the session directory exists
