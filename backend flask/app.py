@@ -11,7 +11,7 @@ import os
 import time
 import logging
 from werkzeug.utils import secure_filename
-
+import redis
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -30,9 +30,13 @@ CORS(app, supports_credentials=True, origins='*')
 app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
 
 # Flask-Session Configuration
-app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_FILE_DIR'] = os.path.join(app.root_path, 'flask_session')
 app.config['SESSION_PERMANENT'] = False  # Optional: session expiration
+
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url("rediss://red-crl9vqogph6c73e28qdg:tr0CPEn877CR8b5KQdjHDASLwKDv9L8F@oregon-redis.render.com:6379")
+
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True  # Use this if you're on HTTPS
