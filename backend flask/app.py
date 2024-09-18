@@ -18,10 +18,13 @@ app = Flask(__name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
+# allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:8080').split(',')
+
 
 # CORS Configuration
 # CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, origins='*')
+
 
 # Secret key for sessions (use environment variables in production)
 app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
@@ -30,6 +33,10 @@ app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_FILE_DIR'] = os.path.join(app.root_path, 'flask_session')
 app.config['SESSION_PERMANENT'] = False  # Optional: session expiration
+
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True  # Use this if you're on HTTPS
+
 os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 Session(app)
 

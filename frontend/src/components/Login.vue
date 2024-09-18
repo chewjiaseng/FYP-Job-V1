@@ -98,13 +98,15 @@ export default {
     // },
     
     login() {
+      const apiUrl = process.env.VUE_APP_API_URL;
+
       const payload = {
         identifier: this.identifier,
         password: this.password,
         role: this.selectedRole // Include the role in the payload
       };
 
-      fetch('http://localhost:5000/login', {
+      fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -115,7 +115,8 @@ export default {
   },
   methods: {
     fetchJobs() {
-      fetch('http://localhost:5000/jobs', {
+      const apiUrl = process.env.VUE_APP_API_URL;
+      fetch(`${apiUrl}/jobs`, {
         credentials: 'include',
       })
         .then(response => response.json())
@@ -137,6 +138,7 @@ export default {
       this.applyDialog = true;
     },
     submitApplication() {
+      const apiUrl = process.env.VUE_APP_API_URL;
       const formData = new FormData();
       formData.append('job_seeker_id', sessionStorage.getItem('user_id'));
       formData.append('job_id', this.selectedJobId);
@@ -148,7 +150,7 @@ export default {
         formData.append('resume_pdf', this.application.resume_pdf);
       }
 
-      fetch('http://localhost:5000/apply', {
+      fetch(`${apiUrl}/apply`, {
         method: 'POST',
         body: formData,
         credentials: 'include'

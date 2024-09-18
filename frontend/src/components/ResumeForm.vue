@@ -133,7 +133,7 @@ import NavbarSeeker from './jobseekers/NavbarSeeker.vue';
 import axios from 'axios';
 
 // Set the base URL for all axios requests
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = process.env.VUE_APP_API_URL;
 
 export default {
   components: {
@@ -169,10 +169,13 @@ export default {
       this.file = event.target.files[0];
     },
     fetchUsername() {
-      // Return the username from some source (e.g., localStorage, API, Vuex store, etc.)
-      return localStorage.getItem('username') || '';
+      const username = sessionStorage.getItem('username') || '';
+  console.log('Username from fetchUsername:', username);
+  return username;
     },
     async submitResume() {
+      console.log('Submitting resume with username:', this.username);
+
       if (!this.file) {
         this.message = "Please upload a file.";
         return;
@@ -235,60 +238,61 @@ export default {
       // Optionally, you can store the jobId here to link the application to the job
       // this.application.jobId = jobId;
     },
-    submitApplication() {
-      const formData = new FormData();
-      formData.append('job_seeker_id', sessionStorage.getItem('user_id'));
-      formData.append('job_id', this.selectedJobId);
-      formData.append('name', this.application.name);
-      formData.append('identification_card', this.application.identification_card);
-      formData.append('gender', this.application.gender);
-      formData.append('hp_number', this.application.hp_number);
-      if (this.application.resume_pdf) {
-        formData.append('resume_pdf', this.application.resume_pdf);
-      }
+    async submitApplication() {
+  const formData = new FormData();
+  formData.append('job_seeker_id', sessionStorage.getItem('user_id'));
+  formData.append('job_id', this.selectedJobId);
+  formData.append('name', this.application.name);
+  formData.append('identification_card', this.application.identification_card);
+  formData.append('gender', this.application.gender);
+  formData.append('hp_number', this.application.hp_number);
+  if (this.application.resume_pdf) {
+    formData.append('resume_pdf', this.application.resume_pdf);
+  }
 
-      fetch('http://localhost:5000/apply', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include'
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Application was successful
-            this.snackbar = {
-              show: true,
-              message: 'You have successfully applied for the part-time job',
-              color: 'blue'
-            };
-            this.applyDialog = false;
-          } else {
-            // Application failed
-            this.snackbar = {
-              show: true,
-              message: 'Sorry, application failed. Please try again.',
-              color: 'red'
-            };
-          }
-        })
-        .catch(error => {
-          console.error('Error submitting application:', error);
-          this.snackbar = {
-            show: true,
-            message: 'Sorry, application failed. Please try again.',
-            color: 'red'
-          };
-        });
+  try {
+    const response = await axios.post('/apply', formData, { withCredentials: true });
+    if (response.data.success) {
+      // Application was successful
+      this.snackbar = {
+        show: true,
+        message: 'You have successfully applied for the part-time job',
+        color: 'blue'
+      };
+      this.applyDialog = false;
+    } else {
+      // Application failed
+      this.snackbar = {
+        show: true,
+        message: 'Sorry, application failed. Please try again.',
+        color: 'red'
+      };
     }
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    this.snackbar = {
+      show: true,
+      message: 'Sorry, application failed. Please try again.',
+      color: 'red'
+    };
+  }
+}
   },
-  mounted() {
-    this.username = this.fetchUsername();
+  async mounted() {
+  this.username = this.fetchUsername();
+  console.log('Fetched username:', this.username);
 
-    // Check if user is authenticated (example for session-based login)
-    if (!this.username) {
-      this.$router.push('/login'); // Redirect to login if not authenticated
+  try {
+    if (!this.username && this.$route.path !== '/login') {
+      console.log('Redirecting to /login');
+      await this.$router.push('/login');
+    }
+  } catch (error) {
+    if (error.name !== 'NavigationDuplicated') {
+      console.error('Navigation error:', error);
     }
   }
+}
 };
 </script>
 

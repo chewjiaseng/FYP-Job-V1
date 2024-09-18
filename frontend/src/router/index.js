@@ -89,6 +89,10 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = !!localStorage.getItem('isAuthenticated'); // Check if the user is authenticated
   const username = sessionStorage.getItem('username');
 
+  console.log('Navigating to:', to.fullPath);
+  console.log('Authenticated:', isAuthenticated);
+  console.log('Username:', username);
+
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (isAuthenticated && username) {
       next(); // Allow access if authenticated
