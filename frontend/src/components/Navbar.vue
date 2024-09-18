@@ -37,7 +37,7 @@
 }
 
 .custom-button {
-  color: white; /* Customize button text color */
+  color: black; /* Customize button text color */
   font-size: 0.75rem; /* Customize button text size to be smaller */
   margin: 0 8px; /* Space between buttons (reduced margin) */
 }
