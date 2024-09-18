@@ -129,8 +129,9 @@ export default {
   },
   methods: {
     getUserInfo() {
+      const apiUrl = process.env.VUE_APP_API_URL;
       axios
-        .get("http://localhost:5000/user-info", { withCredentials: true })
+        .get(`${apiUrl}/user-info`, { withCredentials: true })
         .then((response) => {
           this.username = response.data.username;
           this.userId = response.data.user_id;
@@ -141,8 +142,9 @@ export default {
         });
     },
     getProviderJobs() {
+      const apiUrl = process.env.VUE_APP_API_URL;
       axios
-        .get("http://localhost:5000/provider-jobs", { withCredentials: true })
+        .get(`${apiUrl}/provider-jobs`, { withCredentials: true })
         .then((response) => {
           this.jobs = response.data;
         })
@@ -155,9 +157,10 @@ export default {
       this.editDialog = true;
     },
     updateJob() {
+      const apiUrl = process.env.VUE_APP_API_URL;
       axios
         .put(
-          `http://localhost:5000/update-job/${this.editedJob.id}`,
+          `${apiUrl}/update-job/${this.editedJob.id}`,
           this.editedJob,
           { withCredentials: true }
         )
@@ -185,8 +188,9 @@ export default {
       }
     },
     deleteJob(jobId) {
+      const apiUrl = process.env.VUE_APP_API_URL;
       axios
-        .delete(`http://localhost:5000/delete-job/${jobId}`, { withCredentials: true })
+        .delete(`${apiUrl}/delete-job/${jobId}`, { withCredentials: true })
         .then((response) => {
           this.jobs = this.jobs.filter((job) => job.id !== jobId);
           this.snackbarText = "Delete successfully";
@@ -208,8 +212,9 @@ export default {
       this.$router.push("/view-applications"); // This will redirect to the new page
     },
     logout() {
+      const apiUrl = process.env.VUE_APP_API_URL;
       axios
-        .get("http://localhost:5000/logout", { withCredentials: true })
+        .get(`${apiUrl}/logout`, { withCredentials: true })
         .then((response) => {
           if (response.data.message) {
             localStorage.removeItem("isAuthenticated");

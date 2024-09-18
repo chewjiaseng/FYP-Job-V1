@@ -91,7 +91,9 @@ export default {
       user_id: this.userId,  // Include user ID in the job data
     };
 
-    fetch('http://localhost:5000/create-job', {
+    // Use VUE_APP_API_URL from the environment
+    const apiUrl = process.env.VUE_APP_API_URL;
+    fetch(`${apiUrl}/create-job`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
