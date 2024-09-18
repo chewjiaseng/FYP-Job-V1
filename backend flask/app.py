@@ -45,14 +45,14 @@ os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 Session(app)
 
 # Define the path to the session folder
-session_folder = 'D:/UPM registration/fyp local path github/FYP-Job-V1/backend flask/flask_session'
+# session_folder = 'D:/UPM registration/fyp local path github/FYP-Job-V1/backend flask/flask_session'
 now = time.time()
 
 # Delete session files older than 6 hours (21,600 seconds)
-for filename in os.listdir(session_folder):
-    file_path = os.path.join(session_folder, filename)
-    if os.path.getmtime(file_path) < now - 21600:  # 6 hours = 21600 seconds
-        os.remove(file_path)
+# for filename in os.listdir(session_folder):
+#     file_path = os.path.join(session_folder, filename)
+#     if os.path.getmtime(file_path) < now - 21600:  # 6 hours = 21600 seconds
+#         os.remove(file_path)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
