@@ -272,7 +272,7 @@ export default {
   /* position: absolute; */
   top: 10px;
   left: 10px;
-  background-color: blue !important;
+  /* background-color: blue !important; */
   color: white !important;
 }
 

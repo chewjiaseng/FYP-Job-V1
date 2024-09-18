@@ -124,8 +124,9 @@ export default {
   },
   methods: {
     fetchApplications() {
+      const apiUrl = process.env.VUE_APP_API_URL;
       axios
-        .get('http://localhost:5000/provider-applications', {
+        .get(`${apiUrl}/provider-applications`, {
           withCredentials: true,
         })
         .then((response) => {
@@ -167,9 +168,10 @@ export default {
       if (this.currentApplication) {
         const updatedStatus = this.selectedStatus;
         const applicationId = this.currentApplication.application_id;
+        const apiUrl = process.env.VUE_APP_API_URL;
 
         axios
-          .put(`http://localhost:5000/application/${applicationId}/status`, {
+          .put(`${apiUrl}/application/${applicationId}/status`, {
             status: updatedStatus,
           }, {
             withCredentials: true,
