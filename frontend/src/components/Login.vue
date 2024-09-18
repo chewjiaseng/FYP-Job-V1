@@ -74,27 +74,64 @@ export default {
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },
-    async login() {
-      try {
-        const response = await axios.post('http://localhost:5000/login', {
-          identifier: this.identifier,
-          password: this.password,
-          role: this.selectedRole
-        });
+    // async login() {
+    //   try {
+    //     const response = await axios.post('http://localhost:5000/login', {
+    //       identifier: this.identifier,
+    //       password: this.password,
+    //       role: this.selectedRole
+    //     });
 
-        if (response.data.redirect) {
-          localStorage.setItem('userRole', this.selectedRole);
-          this.$router.push(response.data.redirect);
+    //     if (response.data.redirect) {
+    //       localStorage.setItem('userRole', this.selectedRole);
+    //       this.$router.push(response.data.redirect);
+    //     } else {
+    //       alert(response.data.message);
+    //     }
+    //   } catch (error) {
+    //     if (error.response) {
+    //       alert(error.response.data.error);
+    //     } else {
+    //       alert('An error occurred. Please try again later.');
+    //     }
+    //   }
+    // },
+    
+    login() {
+      const apiUrl = process.env.VUE_APP_API_URL;
+
+      const payload = {
+        identifier: this.identifier,
+        password: this.password,
+        role: this.selectedRole // Include the role in the payload
+      };
+
+      fetch(`${apiUrl}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message) {
+          localStorage.setItem('isAuthenticated', 'true'); // Set authentication status
+          sessionStorage.setItem('username', this.identifier); // Store username in sessionStorage
+          localStorage.setItem('userRole', this.selectedRole); // Store user role
+
+          console.log('Stored username:', sessionStorage.getItem('username')); // Debugging line
+          this.$store.dispatch('updateUsername', this.identifier);
+          this.$router.push(data.redirect);
         } else {
-          alert(response.data.message);
+          alert(data.error);
         }
-      } catch (error) {
-        if (error.response) {
-          alert(error.response.data.error);
-        } else {
-          alert('An error occurred. Please try again later.');
-        }
-      }
+      })
+      .catch(error => {
+        console.error('Error during login:', error);
+        alert('An error occurred. Please try again later.');
+      });
     },
     goToSignup() {
       this.$router.push('/signup');
