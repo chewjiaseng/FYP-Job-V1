@@ -12,6 +12,7 @@ import time
 import logging
 from werkzeug.utils import secure_filename
 import redis
+from dotenv import load_dotenv
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -19,6 +20,9 @@ app = Flask(__name__)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 # allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:8080').split(',')
+
+load_dotenv()
+environment = os.getenv('FLASK_ENV', 'development')
 
 
 # CORS Configuration
@@ -40,6 +44,11 @@ app.config['SESSION_PERMANENT'] = False  # Optional: session expiration
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_REDIS'] = redis.from_url("rediss://red-crl9vqogph6c73e28qdg:tr0CPEn877CR8b5KQdjHDASLwKDv9L8F@oregon-redis.render.com:6379")
 
+# Example: Set other environment-specific configurations
+if environment == 'production':
+    app.config['SESSION_COOKIE_SECURE'] = True
+else:
+    app.config['SESSION_COOKIE_SECURE'] = False
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True  # Use this if you're on HTTPS
