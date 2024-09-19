@@ -23,8 +23,11 @@ logging.basicConfig(level=logging.INFO)
 
 # CORS Configuration
 # CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
-CORS(app, supports_credentials=True, origins='*')
+# CORS(app, supports_credentials=True, origins='*')
+frontend_url = os.getenv('FRONTEND_URL', 'https://job-frontend-hxx1.onrender.com')
+local_frontend_urls = ['http://localhost:8080', 'http://192.168.0.105:8080']
 
+CORS(app, supports_credentials=True, origins=[frontend_url] + local_frontend_urls)
 
 # Secret key for sessions (use environment variables in production)
 app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
