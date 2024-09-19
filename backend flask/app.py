@@ -224,7 +224,8 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
         app.logger.info(f"User {username} created successfully.")
-        return jsonify({"message": "User created successfully!"}), 201
+        return jsonify({"success": True, "message": "User created successfully!"}), 201
+
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error occurred during signup: {e}")
