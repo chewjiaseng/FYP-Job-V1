@@ -1,5 +1,4 @@
 <template>
-  <V-app>
   <v-container>
     <!-- Include the Navbar component -->
     <Navbar />
@@ -62,7 +61,6 @@
       Already have an account? Log In
     </v-btn>
   </v-container>
-</V-app>
 </template>
 
 <script>

@@ -1,5 +1,4 @@
 <template>
-  <v-app>
     <v-container>
       <!-- User Table -->
       <v-simple-table class="aligned-table">
@@ -111,7 +110,6 @@
         <v-btn text @click="snackbar = false">Close</v-btn>
       </v-snackbar>
     </v-container>
-  </v-app>
 </template>
 
 <script>

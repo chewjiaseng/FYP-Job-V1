@@ -1,5 +1,4 @@
 <template>
-  <v-app>
   <v-container>
     <v-row align="center" justify="center" style="height: 100vh;">
       <v-col class="text-center">
@@ -30,7 +29,6 @@
       </div>
     </v-snackbar>
   </v-container>
-</v-app>
 </template>
 
 <script>

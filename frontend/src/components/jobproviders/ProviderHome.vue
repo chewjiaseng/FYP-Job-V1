@@ -1,5 +1,4 @@
 <template>
-  <v-app>
     <v-container class="custom-container">
       <h1>Welcome, {{ username }} (ID: {{ userId }})</h1>
 
@@ -94,7 +93,6 @@
           </div>
         </v-snackbar>
     </v-container>
-  </v-app>
 </template>
 
 <script>

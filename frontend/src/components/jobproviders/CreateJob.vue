@@ -1,5 +1,4 @@
 <template>
-  <v-app>
     <v-container fluid>
       <v-row justify="center">
         <v-col xs12 sm10 md8 lg6 xl4>
@@ -62,7 +61,6 @@
         </v-col>
       </v-row>
     </v-container>
-  </v-app>
 </template>
 
 <script>
@@ -91,7 +89,7 @@ export default {
       alert('Please fill in the information!'); // Display alert
       return; // Prevent further execution
     }
-    
+
     const jobData = {
       job_name: this.job_name,
       job_category: this.job_category,

@@ -1,5 +1,4 @@
 <template>
-  <v-app>
   <v-container>
     <!-- Include the Navbar component -->
     <Navbar />
@@ -53,7 +52,6 @@
       Create a new account
     </v-btn>
   </v-container>
-</v-app>
 </template>
 
 <script>

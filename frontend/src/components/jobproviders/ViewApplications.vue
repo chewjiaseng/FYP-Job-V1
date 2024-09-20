@@ -1,5 +1,4 @@
 <template>
-  <v-app>
     <v-container>
       <v-btn @click="goBack" color="blue">
         Back to Provider Home
@@ -87,7 +86,6 @@
       </v-snackbar>
 
     </v-container>
-  </v-app>
 </template>
 
 <script>
