@@ -24,6 +24,7 @@
         class="logout-button"
         color="red"
         text-color="white !important;"
+        :loading="loading" :disabled="loading"
       >
         Logout
       </v-btn>
@@ -74,7 +75,7 @@
             </v-form>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="green" @click="updateJob">Save</v-btn>
+            <v-btn color="green" @click="updateJob":loading="loading" :disabled="loading">Save</v-btn>
             <v-btn @click="editDialog = false">Cancel</v-btn>
           </v-card-actions>
         </v-card>
@@ -103,6 +104,7 @@ export default {
   name: "ProviderHome",
   data() {
     return {
+      loading: false,
       username: "",
       userId: "",
       jobs: [],
@@ -158,6 +160,7 @@ export default {
     },
     updateJob() {
       const apiUrl = process.env.VUE_APP_API_URL;
+      this.loading = true;
       axios
         .put(
           `${apiUrl}/update-job/${this.editedJob.id}`,
@@ -180,7 +183,10 @@ export default {
           this.snackbarText = "Update failed";
           this.snackbarColor = "red";
           this.snackbar = true;
-        });
+        }).finally(() => {
+        // Reset loading state after the process is completed
+        this.loading = false;
+      });
     },
     confirmDelete(jobId) {
       if (confirm("Do you want to delete this job?")) {
@@ -213,6 +219,7 @@ export default {
     },
     logout() {
       const apiUrl = process.env.VUE_APP_API_URL;
+      this.loading = true;
       axios
         .get(`${apiUrl}/logout`, { withCredentials: true })
         .then((response) => {
@@ -227,7 +234,10 @@ export default {
         .catch((error) => {
           console.error("Error during logout:", error);
           alert("An error occurred. Please try again later.");
-        });
+        }).finally(() => {
+      // Reset loading state after the process is completed
+      this.loading = false;
+    });
     },
   },
 };

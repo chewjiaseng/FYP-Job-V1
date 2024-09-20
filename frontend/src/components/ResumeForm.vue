@@ -24,9 +24,9 @@
           <v-card-title class="headline">Upload Your Resume</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="submitResume">
-              <v-file-input v-model="file" label="Choose file" required></v-file-input>
+              <v-file-input v-model="file" label="Choose file" required accept=".pdf,.txt"></v-file-input>
               <div style="margin-bottom: 20px;"> <!-- Add margin-bottom to the wrapper -->
-                <v-btn type="submit" class="mt-3" style="background-color: #4CAF50; color: white;">Submit</v-btn>
+                <v-btn type="submit" class="mt-3" style="background-color: #4CAF50; color: white;" :loading="loading" :disabled="loading">Submit</v-btn>
               </div>
             </v-form>
 
@@ -108,7 +108,7 @@
               </v-form>
             </v-card-text>
             <v-card-actions>
-              <v-btn color="green" @click="submitApplication">Send</v-btn>
+              <v-btn color="green" @click="submitApplication" :loading="loading" :disabled="loading">Send</v-btn>
               <v-btn @click="applyDialog = false">Cancel</v-btn>
             </v-card-actions>
           </v-card>
@@ -141,6 +141,7 @@ export default {
   },
   data() {
     return {
+      loading: false, // Loading state
       file: null,
       message: '',
       predictedCategory: '',
@@ -170,14 +171,16 @@ export default {
     },
     fetchUsername() {
       const username = sessionStorage.getItem('username') || '';
-  console.log('Username from fetchUsername:', username);
-  return username;
+      console.log('Username from fetchUsername:', username);
+      return username;
     },
     async submitResume() {
+      this.loading = true;
       console.log('Submitting resume with username:', this.username);
 
       if (!this.file) {
         this.message = "Please upload a file.";
+        this.loading = false;
         return;
       }
 
@@ -200,12 +203,15 @@ export default {
           this.jobs = [];  // Clear the jobs list if no jobs are found
           this.message = response.data.message || "No jobs found.";
         }
+        this.loading = true;
       } catch (error) {
         if (error.response && error.response.status === 404) {
           this.message = error.response.data.message;  // Display the backend error message
         } else {
           this.message = "Error fetching jobs.";
         }
+      }finally {
+        this.loading = false; // Reset loading at the end
       }
     },
     async fetchJobsByCategory(category) {
@@ -239,44 +245,47 @@ export default {
       // this.application.jobId = jobId;
     },
     async submitApplication() {
-  const formData = new FormData();
-  formData.append('job_seeker_id', sessionStorage.getItem('user_id'));
-  formData.append('job_id', this.selectedJobId);
-  formData.append('name', this.application.name);
-  formData.append('identification_card', this.application.identification_card);
-  formData.append('gender', this.application.gender);
-  formData.append('hp_number', this.application.hp_number);
-  if (this.application.resume_pdf) {
-    formData.append('resume_pdf', this.application.resume_pdf);
-  }
+      this.loading = true;
+      const formData = new FormData();
+      formData.append('job_seeker_id', sessionStorage.getItem('user_id'));
+      formData.append('job_id', this.selectedJobId);
+      formData.append('name', this.application.name);
+      formData.append('identification_card', this.application.identification_card);
+      formData.append('gender', this.application.gender);
+      formData.append('hp_number', this.application.hp_number);
+      if (this.application.resume_pdf) {
+        formData.append('resume_pdf', this.application.resume_pdf);
+      }
 
-  try {
-    const response = await axios.post('/apply', formData, { withCredentials: true });
-    if (response.data.success) {
-      // Application was successful
-      this.snackbar = {
-        show: true,
-        message: 'You have successfully applied for the part-time job',
-        color: 'blue'
-      };
-      this.applyDialog = false;
-    } else {
-      // Application failed
-      this.snackbar = {
-        show: true,
-        message: 'Sorry, application failed. Please try again.',
-        color: 'red'
-      };
+      try {
+        const response = await axios.post('/apply', formData, { withCredentials: true });
+        if (response.data.success) {
+          // Application was successful
+          this.snackbar = {
+            show: true,
+            message: 'You have successfully applied for the part-time job',
+            color: 'blue'
+          };
+          this.applyDialog = false;
+        } else {
+          // Application failed
+          this.snackbar = {
+            show: true,
+            message: 'Sorry, application failed. Please try again.',
+            color: 'red'
+          };
+        }
+      } catch (error) {
+        console.error('Error submitting application:', error);
+        this.snackbar = {
+          show: true,
+          message: 'Sorry, application failed. Please try again.',
+          color: 'red'
+        };
+      }finally {
+        this.loading = false; // Reset loading at the end
+      }
     }
-  } catch (error) {
-    console.error('Error submitting application:', error);
-    this.snackbar = {
-      show: true,
-      message: 'Sorry, application failed. Please try again.',
-      color: 'red'
-    };
-  }
-}
   },
   async mounted() {
   this.username = this.fetchUsername();

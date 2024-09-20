@@ -64,7 +64,7 @@
             ></v-select>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="primary" @click="updateStatus">Save</v-btn>
+            <v-btn color="primary" @click="updateStatus" :loading="loading" :disabled="loading">Save</v-btn>
             <v-btn text @click="editStatusDialog = false">Cancel</v-btn>
           </v-card-actions>
         </v-card>
@@ -97,6 +97,7 @@ export default {
   name: 'ViewApplications',
   data() {
     return {
+      loading: false,
       headers: [
         { text: 'Applicant Name', value: 'applicant_name' },
         { text: 'ID Card', value: 'identification_card' },
@@ -169,6 +170,7 @@ export default {
         const updatedStatus = this.selectedStatus;
         const applicationId = this.currentApplication.application_id;
         const apiUrl = process.env.VUE_APP_API_URL;
+        this.loading = true;
 
         axios
           .put(`${apiUrl}/application/${applicationId}/status`, {
@@ -184,7 +186,10 @@ export default {
           .catch((error) => {
             console.error('Error updating status:', error);
             this.errorSnackbar = true; // Show error message
-          });
+          }).finally(() => {
+          // Reset loading state after the process is completed
+          this.loading = false;
+        });
       }
     },
   },

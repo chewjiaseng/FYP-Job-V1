@@ -1,4 +1,5 @@
 <template>
+  <v-app>
   <v-container>
     <!-- Include the Navbar component -->
     <Navbar />
@@ -22,7 +23,7 @@
       outlined
       clearable
       class="input-field"
-      append-icon="mdi-eye"
+      :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
       @click:append="togglePasswordVisibility"
     ></v-text-field>
 
@@ -41,6 +42,8 @@
       @click="login"
       class="login-button"
       style="background-color: black; color: white;"
+      :loading="loading" 
+      :disabled="loading" 
     >
       Login
     </v-btn>
@@ -50,6 +53,7 @@
       Create a new account
     </v-btn>
   </v-container>
+</v-app>
 </template>
 
 <script>
@@ -67,37 +71,19 @@ export default {
       password: '',
       roles: ['Job Seeker', 'Job Provider'],
       selectedRole: '',
-      showPassword: false
+      showPassword: false,
+      loading: false, // Loading state for the login process
     };
   },
   methods: {
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },
-    // async login() {
-    //   try {
-    //     const response = await axios.post('http://localhost:5000/login', {
-    //       identifier: this.identifier,
-    //       password: this.password,
-    //       role: this.selectedRole
-    //     });
-
-    //     if (response.data.redirect) {
-    //       localStorage.setItem('userRole', this.selectedRole);
-    //       this.$router.push(response.data.redirect);
-    //     } else {
-    //       alert(response.data.message);
-    //     }
-    //   } catch (error) {
-    //     if (error.response) {
-    //       alert(error.response.data.error);
-    //     } else {
-    //       alert('An error occurred. Please try again later.');
-    //     }
-    //   }
-    // },
     
     login() {
+      // Set loading to true when login is initiated
+      this.loading = true;
+
       const apiUrl = process.env.VUE_APP_API_URL;
 
       const payload = {
@@ -127,10 +113,12 @@ export default {
         } else {
           alert(data.error);
         }
+        this.loading = false;
       })
       .catch(error => {
         console.error('Error during login:', error);
         alert('An error occurred. Please try again later.');
+        this.loading = false;
       });
     },
     goToSignup() {

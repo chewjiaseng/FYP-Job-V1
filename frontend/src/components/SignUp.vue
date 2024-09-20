@@ -1,4 +1,5 @@
 <template>
+  <V-app>
   <v-container>
     <!-- Include the Navbar component -->
     <Navbar />
@@ -30,7 +31,7 @@
       outlined
       clearable
       class="input-field"
-      append-icon="mdi-eye"
+      :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
       @click:append="togglePasswordVisibility"
       v-model="password"
     ></v-text-field>
@@ -50,6 +51,8 @@
       class="register-button"
       style="background-color: black; color: white;"
       @click="register"
+      :loading="loading"
+      :disabled="loading"
     >
       Register
     </v-btn>
@@ -59,6 +62,7 @@
       Already have an account? Log In
     </v-btn>
   </v-container>
+</V-app>
 </template>
 
 <script>
@@ -78,6 +82,7 @@ export default {
       roles: ['Job Seeker', 'Job Provider'],
       selectedRole: '',
       showPassword: false,
+      loading: false, // Loading state
     };
   },
   methods: {
@@ -89,6 +94,9 @@ export default {
         alert('Please fill in all fields');
         return;
       }
+
+      // Set loading state to true when registration is initiated
+      this.loading = true;
 
       const payload = {
         username: this.username,
@@ -114,7 +122,11 @@ export default {
       } catch (error) {
         console.error('Error during registration:', error);
         alert('An error occurred. Please try again later.');
+      }finally {
+        // Reset loading state after the process is completed
+        this.loading = false;
       }
+
     },
     clearForm() {
       // Reset all the form fields to blank

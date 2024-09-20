@@ -56,7 +56,7 @@
             <!-- Button Container -->
             <div class="button-container">
               <v-btn @click="goBack" class="back-button" color="blue">Back</v-btn>
-              <v-btn color="green" type="submit" class="create-button" style="color: white;">Create</v-btn>
+              <v-btn color="green" type="submit" class="create-button" style="color: white;" :loading="loading" :disabled="loading">Create</v-btn>
             </div>
           </v-form>
         </v-col>
@@ -70,6 +70,7 @@ export default {
   name: 'CreateJob',
   data() {
     return {
+      loading: false,
       job_name: '',
       job_category: '',
       salary: '',
@@ -81,6 +82,16 @@ export default {
   },
   methods: {
   createJob() {
+    this.loading = true;
+
+    // Check if any required fields are empty
+    if (!this.job_name || !this.job_category || !this.salary || 
+        !this.working_place || !this.working_hours || !this.job_description) {
+      this.loading = false; // Reset loading state
+      alert('Please fill in the information!'); // Display alert
+      return; // Prevent further execution
+    }
+    
     const jobData = {
       job_name: this.job_name,
       job_category: this.job_category,
@@ -122,6 +133,9 @@ export default {
       })
       .catch((error) => {
         console.error('Error creating job:', error.message);
+      }).finally(() => {
+        // Reset loading state after the process is completed
+        this.loading = false;
       });
   },
   goBack() {

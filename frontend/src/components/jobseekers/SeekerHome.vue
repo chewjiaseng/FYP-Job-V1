@@ -65,7 +65,7 @@
             </v-form>
           </v-card-text>
           <v-card-actions>
-            <v-btn color="green" @click="submitApplication">Send</v-btn>
+            <v-btn color="green" @click="submitApplication" :loading="loading" :disabled="loading">Send</v-btn>
             <v-btn @click="applyDialog = false">Cancel</v-btn>
           </v-card-actions>
         </v-card>
@@ -90,6 +90,7 @@ export default {
   },
   data() {
     return {
+      loading: false, // Loading state for the login process
       username: '',
       jobs: [],
       expandedJobs: {},
@@ -149,6 +150,7 @@ export default {
       if (this.application.resume_pdf) {
         formData.append('resume_pdf', this.application.resume_pdf);
       }
+      this.loading = true;
 
       fetch(`${apiUrl}/apply`, {
         method: 'POST',
@@ -181,7 +183,10 @@ export default {
             message: 'Sorry, application failed. Please try again.',
             color: 'red'
           };
-        });
+        }).finally(() => {
+      // Reset loading state after the process is completed
+      this.loading = false;
+    });
     }
   }
 }

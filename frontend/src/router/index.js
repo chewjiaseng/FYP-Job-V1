@@ -11,6 +11,8 @@ import SeekerHome from '@/components/jobseekers/SeekerHome.vue';  // Import Seek
 import ProviderHome from '@/components/jobproviders/ProviderHome.vue';  // Import ProviderHome
 import CreateJob from '@/components/jobproviders/CreateJob.vue';  // Import CreateJob
 import AdminHome from '@/components/admin/AdminHome.vue'; // Import AdminHome
+import ViewUserData from '@/components/admin/ViewUserData.vue';  // Add this import
+
 
 Vue.use(Router);
 
@@ -80,6 +82,11 @@ const router = new Router({
       name: 'ViewApplications',
       component: () => import('@/components/jobproviders/ViewApplications.vue'),  // Create this component
       meta: { requiresAuth: true }  // Protect the route with authentication
+    },
+    {
+      path: '/view-user-data',
+      name: 'ViewUserData',
+      component: ViewUserData,
     }
   ],
 });

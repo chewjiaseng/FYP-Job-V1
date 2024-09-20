@@ -13,6 +13,12 @@ import logging
 from werkzeug.utils import secure_filename
 import redis
 from dotenv import load_dotenv
+import base64
+from sqlalchemy import text
+from cryptography.fernet import Fernet
+from cryptography.fernet import InvalidToken
+
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -29,7 +35,7 @@ environment = os.getenv('FLASK_ENV', 'development')
 # CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
 # CORS(app, supports_credentials=True, origins='*')
 frontend_url = os.getenv('FRONTEND_URL', 'https://job-frontend-hxx1.onrender.com')
-local_frontend_urls = ['http://localhost:8080', 'http://192.168.0.105:8080']
+local_frontend_urls = ['http://localhost:8080', 'http://192.168.0.105:8080','http://192.168.0.104:8080']
 
 CORS(app, supports_credentials=True, origins=[frontend_url] + local_frontend_urls)
 
@@ -77,6 +83,17 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
 db = SQLAlchemy(app)
+
+env_file = '.env.' + os.getenv('FLASK_ENV', 'development')
+
+# Explicitly load the environment variables from the correct .env file
+load_dotenv(dotenv_path=env_file)
+
+fernet_key = os.getenv('FERNET_KEY')
+if not fernet_key:
+    raise ValueError("FERNET_KEY is not set in the environment variables")
+
+cipher_suite = Fernet(fernet_key.encode())
 
 # Define User model
 class User(db.Model):
@@ -214,11 +231,11 @@ def signup():
     if not username or not email or not password:
         return jsonify({"error": "Please fill out all required fields."}), 400
 
-    # Use default PBKDF2 hashing
-    hashed_password = generate_password_hash(password)
+    # Encrypt the password
+    encrypted_password = cipher_suite.encrypt(password.encode()).decode()
 
     # Create a new user object
-    new_user = User(username=username, email=email, password=hashed_password, role=role)
+    new_user = User(username=username, email=email, password=encrypted_password, role=role)
 
     try:
         db.session.add(new_user)
@@ -244,9 +261,9 @@ def login():
 
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
 
-    if user and check_password_hash(user.password, password):
-        # Admin logic
-        if user.username == 'admin' and password == 'admin':
+    if user:
+        # Admin logic: Hardcoded check for admin credentials
+        if identifier == 'admin' and password == 'admin':
             login_user(user)
             app.logger.info(f"Admin user {user.username} logged in successfully.")
             return jsonify({
@@ -256,20 +273,28 @@ def login():
                 "role": user.role
             }), 200
         
-        # Check if role matches
-        if user.role == role:
-            login_user(user)
-            app.logger.info(f"User {user.username} logged in successfully.")
-            redirect_url = '/seeker-home' if user.role == 'Job Seeker' else '/provider-home'
-            return jsonify({
-                "message": "Login successful!",
-                "redirect": redirect_url,
-                "username": user.username,
-                "role": user.role
-            }), 200
+        # Decrypt the password for regular users
+        decrypted_password = cipher_suite.decrypt(user.password.encode()).decode()
+
+        # Check if decrypted password matches the provided password
+        if password == decrypted_password:
+            # Check if role matches
+            if user.role == role:
+                login_user(user)
+                app.logger.info(f"User {user.username} logged in successfully.")
+                redirect_url = '/seeker-home' if user.role == 'Job Seeker' else '/provider-home'
+                return jsonify({
+                    "message": "Login successful!",
+                    "redirect": redirect_url,
+                    "username": user.username,
+                    "role": user.role
+                }), 200
+            else:
+                app.logger.warning(f"Role mismatch for user: {identifier}")
+                return jsonify({"error": "Invalid role."}), 401
         else:
-            app.logger.warning(f"Role mismatch for user: {identifier}")
-            return jsonify({"error": "Invalid role."}), 401
+            app.logger.warning(f"Incorrect password for user: {identifier}")
+            return jsonify({"error": "Invalid credentials."}), 401
     else:
         app.logger.warning(f"Failed login attempt for identifier: {identifier}")
         return jsonify({"error": "Invalid credentials."}), 401
@@ -349,11 +374,25 @@ def provider_jobs():
     
     return jsonify(jobs_list), 200
 
-# Route to display users (for debugging purposes)
 @app.route("/users", methods=['GET'])
 def users():
     all_users = User.query.all()
-    users_data = [{"username": user.username, "email": user.email, "role": user.role} for user in all_users]
+    users_data = []
+    for user in all_users:
+        try:
+            # Try to decrypt the password if it was encrypted with Fernet
+            decrypted_password = cipher_suite.decrypt(user.password.encode()).decode() if user.password else None
+        except InvalidToken:
+            # If the password is not a valid Fernet token, skip decryption or handle accordingly
+            decrypted_password = user.password  # Optionally show 'Invalid' or 'Unencrypted' status
+
+        users_data.append({
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "password": decrypted_password
+        })
+    
     return jsonify(users_data), 200
 
 # Updating job details for Job provide
@@ -519,8 +558,6 @@ def fetch_jobs():
     return jsonify(response_data), 200
 
 #For the Job provider to view the applications based on their own jobs 
-import base64
-from sqlalchemy import text
 
 @app.route('/provider-applications', methods=['GET'])
 def get_provider_applications():
@@ -597,6 +634,37 @@ def update_application_status(application_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+#For admin update and delete
+@app.route('/update-user/<username>', methods=['PUT'])
+def update_user(username):
+    user_data = request.get_json()
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Update fields
+    user.email = user_data.get('email', user.email)
+
+    # Encrypt the password if it's being updated
+    if user_data.get('password'):
+        user.password = cipher_suite.encrypt(user_data['password'].encode()).decode()
+
+    db.session.commit()
+    return jsonify({'message': 'User updated successfully'}), 200
+
+@app.route('/delete-user/<username>', methods=['DELETE'])
+def delete_user(username):
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'User deleted successfully'}), 200
+
 
 if __name__ == "__main__":
     # Ensure the session directory exists
