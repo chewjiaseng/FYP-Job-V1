@@ -5,9 +5,9 @@
         <h1>Welcome, {{ username }} (ID: {{ userId }})</h1>
         
         <!-- Buttons -->
-        <v-btn class="mx-2" color="primary" @click="goToViewUsers">Manage Users</v-btn>
-        <v-btn class="mx-2" color="primary" @click="goToViewJobs">Manage Jobs</v-btn>
-        <v-btn class="mx-2" color="primary" @click="goToViewApplications">Manage Applications</v-btn>
+        <v-btn class="mx-2" color="primary" @click="goToManageUsers">Manage Users</v-btn>
+        <v-btn class="mx-2" color="primary" @click="goToManageJobs">Manage Jobs</v-btn>
+        <v-btn class="mx-2" color="primary" @click="goToManageApplications">Manage Applications</v-btn>
 
         <!-- Logout Button -->
         <v-btn class="mx-2" color="red" text-color="white" @click="logout">
@@ -92,14 +92,14 @@ export default {
 },
 
     // Navigation methods
-    goToViewUsers() {
-      this.$router.push("/view-user-data");
+    goToManageUsers() {
+      this.$router.push("/manage-user-data");
     },
-    goToViewJobs() {
-      this.$router.push("/admin-view-jobs");
+    goToManageJobs() {
+      this.$router.push("/manage-jobs-data");
     },
-    goToViewApplications() {
-      this.$router.push("/admin-view-applications");
+    goToManageApplications() {
+      this.$router.push("/manage-applications-data");
     },
   },
 };

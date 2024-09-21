@@ -11,7 +11,10 @@ import SeekerHome from '@/components/jobseekers/SeekerHome.vue';  // Import Seek
 import ProviderHome from '@/components/jobproviders/ProviderHome.vue';  // Import ProviderHome
 import CreateJob from '@/components/jobproviders/CreateJob.vue';  // Import CreateJob
 import AdminHome from '@/components/admin/AdminHome.vue'; // Import AdminHome
-import ViewUserData from '@/components/admin/ViewUserData.vue';  // Add this import
+import ManageUserData from '../components/admin/ManageUserData.vue';
+import ManageJobsData from '../components/admin/ManageJobsData.vue';
+import ManageApplicationsData from '../components/admin/ManageApplicationsData.vue';
+
 
 
 Vue.use(Router);
@@ -84,9 +87,19 @@ const router = new Router({
       meta: { requiresAuth: true }  // Protect the route with authentication
     },
     {
-      path: '/view-user-data',
-      name: 'ViewUserData',
-      component: ViewUserData,
+      path: '/manage-user-data',
+      name: 'ManageUserData',
+      component: ManageUserData,
+    },
+    {
+      path: '/manage-jobs-data',
+      name: 'ManageJobsData',
+      component: ManageJobsData,
+    },
+    {
+      path: '/manage-applications-data',
+      name: 'ManageApplicationsData',
+      component: ManageApplicationsData,
     }
   ],
 });

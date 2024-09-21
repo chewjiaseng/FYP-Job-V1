@@ -399,8 +399,13 @@ def users():
 @app.route('/update-job/<int:job_id>', methods=['PUT'])
 @login_required
 def update_job(job_id):
-    job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
-    
+    # Check if the current user is admin
+    if current_user.username == "admin":
+        job = Job.query.filter_by(id=job_id).first()  # Admin can access any job without filtering by job_provider_id
+    else:
+        # For regular users (job providers), only allow access to their own jobs
+        job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
+
     if not job:
         return jsonify({"error": "Job not found or you're not authorized to update this job."}), 404
     
@@ -424,8 +429,14 @@ def update_job(job_id):
 @app.route('/delete-job/<int:job_id>', methods=['DELETE'])
 @login_required
 def delete_job(job_id):
-    job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
     
+    # Check if the current user is admin
+    if current_user.username == "admin":
+        job = Job.query.filter_by(id=job_id).first()  # Admin can delete any job without filtering by job_provider_id
+    else:
+        # For regular users (job providers), only allow access to their own jobs
+        job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
+
     if not job:
         return jsonify({"error": "Job not found or you're not authorized to delete this job."}), 404
     
