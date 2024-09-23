@@ -676,6 +676,97 @@ def delete_user(username):
     db.session.commit()
     return jsonify({'message': 'User deleted successfully'}), 200
 
+# Route to retrieve all applications (no provider filter)
+@app.route('/all-applications', methods=['GET'])
+def get_all_applications():
+    try:
+        query = text("""
+        SELECT 
+            a.id AS application_id,
+            a.name AS applicant_name,
+            a.identification_card,
+            a.gender,
+            a.hp_number,
+            a.status,
+            a.applied_at,
+            j.job_name,
+            j.job_category,
+            j.working_place,
+            u.username AS job_provider_name,
+            a.resume_pdf
+        FROM 
+            applications a
+        JOIN 
+            jobs j ON a.job_id = j.id
+        JOIN 
+            "user" u ON j.job_provider_id = u.id;
+        """)
+
+        result = db.session.execute(query)
+
+        applications = result.mappings().all()
+
+        response = []
+        for row in applications:
+            row_dict = dict(row)
+            # Encode resume_pdf as base64 if it exists
+            if row.resume_pdf:
+                row_dict['resume_pdf'] = base64.b64encode(row.resume_pdf).decode('utf-8')
+            response.append(row_dict)
+
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/update-application/<int:application_id>', methods=['PUT'])
+def update_application(application_id):
+    application = Application.query.get(application_id)
+    
+    if not application:
+        return jsonify({'error': 'Application not found'}), 404
+
+    try:
+        # Update the application fields
+        application.name = request.form.get('name', application.name)
+        application.identification_card = request.form.get('identification_card', application.identification_card)
+        application.gender = request.form.get('gender', application.gender)
+        application.hp_number = request.form.get('hp_number', application.hp_number)
+        application.status = request.form.get('status', application.status)
+
+        # Check for remove_resume flag
+        if request.form.get('remove_resume') == 'true':
+            application.resume_pdf = None  # Set to None to remove the current resume
+
+        # Handle resume file upload after checking for removal
+        if 'resume_pdf' in request.files:
+            resume_pdf = request.files['resume_pdf']
+            if resume_pdf and allowed_file(resume_pdf.filename):
+                filename = secure_filename(resume_pdf.filename)
+                application.resume_pdf = resume_pdf.read()  # Update the resume_pdf content
+
+        db.session.commit()
+        return jsonify({'message': 'Application updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    
+@app.route('/delete-application/<int:application_id>', methods=['DELETE'])
+def delete_application(application_id):
+    application = Application.query.get(application_id)
+    
+    if not application:
+        return jsonify({'error': 'Application not found'}), 404
+
+    try:
+        db.session.delete(application)
+        db.session.commit()
+        return jsonify({'message': 'Application deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+   
 
 if __name__ == "__main__":
     # Ensure the session directory exists
