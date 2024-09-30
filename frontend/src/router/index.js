@@ -68,17 +68,20 @@ const router = new Router({
       path: '/provider-home',
       name: 'ProviderHome',
       component: ProviderHome,
-      meta: { requiresAuth: true }  // Add meta field to require authentication
-    },
+      meta: { requiresAuth: true, hideNavbar: true, noMargin: true },
+    }
+    ,
     {
       path: '/admin-home',
       name: 'AdminHome',
       component: AdminHome,
+      meta: { noMargin: true },
     },
     {
       path: '/create-job',
       name: 'CreateJob',
       component: CreateJob,
+      meta: { noMargin: true },
     },
     {
       path: '/view-applications',
@@ -90,16 +93,19 @@ const router = new Router({
       path: '/manage-user-data',
       name: 'ManageUserData',
       component: ManageUserData,
+      meta: { noMargin: true },
     },
     {
       path: '/manage-jobs-data',
       name: 'ManageJobsData',
       component: ManageJobsData,
+      meta: { noMargin: true },
     },
     {
       path: '/manage-applications-data',
       name: 'ManageApplicationsData',
       component: ManageApplicationsData,
+      meta: { noMargin: true },
     }
   ],
 });

@@ -1,6 +1,11 @@
 <template>
   <v-app>
-    <router-view />
+    <div v-if="!$route.meta.hideNavbar">
+      <Navbar />
+    </div>
+    <div :class="{ 'app-with-margin': !$route.meta.noMargin }">
+      <router-view />
+    </div>
   </v-app>
 </template>
 
@@ -17,6 +22,9 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+.app-with-margin {
   margin-top: 60px;
 }
 </style>

@@ -1,42 +1,46 @@
 <template>
-    <v-container>
-      <v-btn @click="goBack" color="blue">
-        Back to Provider Home
-      </v-btn>
+  <v-container>
+    <h1>Applications for Your Jobs</h1>
 
-      <h1>Applications for Your Jobs</h1>
+    <v-data-table
+      :headers="headers"
+      :items="applications"
+      item-key="application_id"
+      class="elevation-1"
+      dense
+    >
+      <template v-slot:item="{ item }">
+        <tr>
+          <td>{{ item.applicant_name }}</td>
+          <td>{{ item.identification_card }}</td>
+          <td>{{ item.gender }}</td>
+          <td>{{ item.hp_number }}</td>
+          <td>{{ new Date(item.applied_at).toLocaleDateString() }}</td>
+          <td>{{ item.job_name }}</td>
+          <td>{{ item.job_category }}</td>
+          <td>{{ item.working_place }}</td>
+          <td>
+            {{ item.status }}
+            <v-icon @click="editStatus(item)">mdi-pencil</v-icon>
+          </td>
+          <td>
+            <v-btn @click="viewResume(item.resume_pdf)" color="primary">
+              View Resume
+            </v-btn>
+          </td>
+        </tr>
+      </template>
+    </v-data-table>
 
-      <v-data-table
-        :headers="headers"
-        :items="applications"
-        item-key="application_id"
-        class="elevation-1"
-        dense
-      >
-        <template v-slot:item="{ item }">
-          <tr>
-            <td>{{ item.applicant_name }}</td>
-            <td>{{ item.identification_card }}</td>
-            <td>{{ item.gender }}</td>
-            <td>{{ item.hp_number }}</td>
-            
-            <td>{{ new Date(item.applied_at).toLocaleDateString() }}</td>
-            <td>{{ item.job_name }}</td>
-            <td>{{ item.job_category }}</td>
-            <td>{{ item.working_place }}</td>
-            <td>
-              <!-- Status with edit icon -->
-              {{ item.status }}
-              <v-icon @click="editStatus(item)">mdi-pencil</v-icon>
-            </td>
-            <td>
-              <v-btn @click="viewResume(item.resume_pdf)" color="primary">
-                View Resume
-              </v-btn>
-            </td>
-          </tr>
-        </template>
-      </v-data-table>
+    <!-- Floating Action Button -->
+    <v-btn
+      fab
+      color="blue"
+      @click="goBack"
+      class="back-button-fab"
+    >
+      <v-icon dark>mdi-arrow-left</v-icon>
+    </v-btn>
 
       <!-- Dialog for no resume -->
       <v-dialog v-model="noResumeDialog" max-width="500">
@@ -195,5 +199,12 @@ export default {
 </script>
 
 <style scoped>
+.back-button-fab {
+  position: fixed; /* Fixed position */
+  bottom: 20px; /* Distance from the bottom */
+  left: 20px; /* Move to the left side */
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
 /* Add any additional styling for the component if needed */
 </style>

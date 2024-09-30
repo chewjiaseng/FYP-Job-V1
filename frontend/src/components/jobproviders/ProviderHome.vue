@@ -1,39 +1,24 @@
 <template>
-    <v-container class="custom-container">
-      <h1>Welcome, {{ username }} (ID: {{ userId }})</h1>
+  <v-container class="custom-container khaki-background">
+    <v-card class="pa-4 mb-6 khaki-card">
+      <h1 class="text-h4 mb-4">Welcome, {{ username }} (ID: {{ userId }})</h1>
 
-      <!-- Create New Job Button -->
-      <!-- <v-btn @click="goToCreateJob" class="create-job-button" color="green">
-        Create New Job
-      </v-btn> -->
-
-      <!-- Create New Job Button and View Applications Button -->
-      <div class="action-buttons">
-        <v-btn @click="goToCreateJob" class="create-job-button" color="green">
-          Create New Job
+      <!-- Action Buttons -->
+      <div class="action-buttons mb-4">
+        <v-btn @click="goToCreateJob" class="create-job-button" color="primary" elevation="2" rounded>
+          <v-icon left>mdi-plus</v-icon>Create New Job
         </v-btn>
-        <v-btn @click="goToViewApplications" class="view-applications-button" color="blue">
-          View Applications
+        <v-btn @click="goToViewApplications" class="view-applications-button" color="blue darken-2" elevation="2" rounded>
+          <v-icon left>mdi-file-document</v-icon>View Applications
         </v-btn>
       </div>
-
-      <!-- Logout Button -->
-      <v-btn
-        @click="logout"
-        class="logout-button"
-        color="red"
-        text-color="white !important;"
-        :loading="loading" :disabled="loading"
-      >
-        Logout
-      </v-btn>
 
       <!-- Jobs Table -->
       <v-data-table
         :headers="headers"
         :items="jobs"
         item-key="id"
-        class="elevation-1 full-width-table"
+        class="elevation-1 full-width-table khaki-card"
         dense
       >
         <template v-slot:item="{ item }">
@@ -47,52 +32,69 @@
             <td>{{ new Date(item.created_at).toLocaleDateString() }}</td>
             <td>
               <!-- Edit Icon Button -->
-              <v-btn icon small @click="openEditDialog(item)">
+              <v-btn icon small @click="openEditDialog(item)" color="primary">
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
               <!-- Delete Icon Button -->
-              <v-btn icon small @click="confirmDelete(item.id)">
-                <v-icon color="red">mdi-delete</v-icon>
+              <v-btn icon small @click="confirmDelete(item.id)" color="red">
+                <v-icon>mdi-delete</v-icon>
               </v-btn>
             </td>
           </tr>
         </template>
       </v-data-table>
+    </v-card>
 
-      <!-- Edit Job Dialog -->
-      <v-dialog v-model="editDialog" max-width="500px">
-        <v-card>
-          <v-card-title>Edit Job</v-card-title>
-          <v-card-text>
-            <v-form>
-              <v-text-field v-model="editedJob.job_name" label="Job Name"></v-text-field>
-              <v-text-field v-model="editedJob.job_category" label="Job Category"></v-text-field>
-              <v-text-field v-model="editedJob.salary" label="Salary"></v-text-field>
-              <v-text-field v-model="editedJob.working_place" label="Working Place"></v-text-field>
-              <v-text-field v-model="editedJob.working_hours" label="Working Hours"></v-text-field>
-              <v-textarea v-model="editedJob.job_description" label="Job Description" rows="2"></v-textarea>
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="green" @click="updateJob":loading="loading" :disabled="loading">Save</v-btn>
-            <v-btn @click="editDialog = false">Cancel</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+    <!-- Logout Button -->
+    <v-btn
+      @click="logout"
+      class="logout-button custom-logout-button"
+      color="red darken-2"
+      text
+      :loading="loading" :disabled="loading"
+      rounded
+      elevation="2"
+      style="color: white !important;"
+    >
+      <v-icon left>mdi-logout</v-icon>Logout
+    </v-btn>
 
-      <!-- Snackbar for notifications -->
-        <v-snackbar
-          v-model="snackbar"
-          :color="snackbarColor"
-          :timeout="3000"
-          class="custom-snackbar"
-        >
-          <div class="snackbar-content">
-            {{ snackbarText }}
-            <v-btn color="white" text @click="snackbar = false">Close</v-btn>
-          </div>
-        </v-snackbar>
-    </v-container>
+    <!-- Edit Job Dialog -->
+    <v-dialog v-model="editDialog" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h6">Edit Job</v-card-title>
+        <v-card-text>
+          <v-form>
+            <v-text-field v-model="editedJob.job_name" label="Job Name" outlined></v-text-field>
+            <v-text-field v-model="editedJob.job_category" label="Job Category" outlined></v-text-field>
+            <v-text-field v-model="editedJob.salary" label="Salary" outlined></v-text-field>
+            <v-text-field v-model="editedJob.working_place" label="Working Place" outlined></v-text-field>
+            <v-text-field v-model="editedJob.working_hours" label="Working Hours" outlined></v-text-field>
+            <v-textarea v-model="editedJob.job_description" label="Job Description" rows="2" outlined></v-textarea>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="success" @click="updateJob" :loading="loading" :disabled="loading" rounded>
+            <v-icon left>mdi-content-save</v-icon>Save
+          </v-btn>
+          <v-btn @click="editDialog = false" rounded>Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar for notifications -->
+    <v-snackbar
+      v-model="snackbar"
+      :color="snackbarColor"
+      :timeout="3000"
+      class="custom-snackbar"
+    >
+      <div class="snackbar-content">
+        {{ snackbarText }}
+        <v-btn color="white" text @click="snackbar = false">Close</v-btn>
+      </div>
+    </v-snackbar>
+  </v-container>
 </template>
 
 <script>
@@ -242,55 +244,95 @@ export default {
 </script>
 
 <style scoped>
-.custom-container {
-  max-width: 100%; /* Ensure the container width remains full */
-  margin: 0 auto; /* Center the container on the page */
+html, body, #app{
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensure body takes full height */
 }
 
+
+.custom-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f0e68c; /* Soft khaki color */
+  min-height: 100vh; /* Ensure container takes full viewport height */
+  box-sizing: border-box; /* Ensure padding is included in height calculation */
+}
+
+.v-container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.khaki-background {
+  background-color: #f0e68c; /* Apply khaki background */
+}
+
+/*This is the container color */
+.khaki-card {
+  background-color: rgba(255, 249, 230, 0.85); /* Semi-transparent khaki */
+  box-shadow: none;
+}
+
+/*This is the table color*/
 .full-width-table {
-  width: 100%; /* Keep the table width 100% to fill the container */
-  transform: scale(0.9); /* Scale down the table to 90% of its original size */
-  transform-origin: center; /* Scale the table from the center */
+  background-color: #f8f8f8 !important; /* Light grey */
+  border-radius: 8px;
+  text-align: left; /* Ensures content is aligned to the left */
 }
 
 .full-width-table td,
 .full-width-table th {
-  padding: 8px; /* Adjust padding if needed to reduce size further */
-  font-size: 0.9em; /* Slightly reduce font size */
+  padding: 10px;
+  font-size: 0.95em;
 }
 
 .logout-button {
   margin-top: 20px;
-  background-color: red !important;
-  color: white !important; /* Ensure text color is visible */
+  margin-bottom: 40px;
 }
 
-.create-job-button {
-  margin-right: 10px;
-  margin-top: 20px;
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
 }
 
 .custom-snackbar {
-  padding: 0 !important;
   display: flex !important;
   justify-content: center !important;
 }
 
-.view-applications-button {
-  /* position: absolute; */
-  top: 10px;
-  left: 10px;
-  /* background-color: blue !important; */
-  color: white !important;
-}
-
-/* Flexbox to control content inside snackbar */
 .snackbar-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 16px;
   width: 100%;
-  max-width: 300px; /* Set the desired width */
+  max-width: 300px;
 }
+
+.v-btn {
+  transition: all 0.3s ease;
+}
+
+.v-btn:hover {
+  filter: brightness(1.1);
+}
+
+.v-application--wrap {
+  padding: 0 !important;  /* Remove any padding applied by Vuetify */
+  margin: 0 !important;
+}
+
+.custom-logout-button {
+  background-color: #ff6b6b; /* Custom logout button color */
+  color: white !important; /* Text color */
+}
+
+.custom-logout-button:hover {
+  background-color: #ff4c4c; /* Darker color on hover */
+}
+
+
 </style>

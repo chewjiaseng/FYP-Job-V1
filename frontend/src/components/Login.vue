@@ -154,7 +154,7 @@ export default {
   padding: 0 !important;      /* Remove padding */
   margin: 0 !important;       /* Remove margin */
   position: absolute; /* Set absolute positioning */
-  top: 0;          /* Align to the top of the viewport */
+  top: 20px;          /* Align to the top of the viewport */
   left: 0;
   right: 0;
 }
