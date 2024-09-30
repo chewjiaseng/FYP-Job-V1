@@ -35,7 +35,7 @@
 
         <!-- Username on the right side -->
         <v-col cols="auto" class="right-user">
-          <span v-if="username" class="username">{{ username }}</span>
+          <span v-if="username" class="username" style="color: aliceblue;">{{ username }}</span>
         </v-col>
       </v-row>
     </v-container>
@@ -66,7 +66,7 @@ export default {
 
 <style scoped>
 .custom-navbar {
-  background-color: #4caf50;
+  background-color: #201a94 !important;
 }
 
 .custom-title {
@@ -90,7 +90,7 @@ export default {
 }
 
 .logout-button {
-  color: red;
+  color: red !important;
 }
 
 .logo-image {

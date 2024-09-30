@@ -17,7 +17,13 @@ import base64
 from sqlalchemy import text
 from cryptography.fernet import Fernet
 from cryptography.fernet import InvalidToken
+import fitz
+import pytesseract
+from PIL import Image
+import io
 
+# Specify the path to the Tesseract executable
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Adjust this if your installation is different
 
 
 # Initialize Flask app
@@ -185,11 +191,69 @@ def job_recommendation(resume_text):
     return recommended_job
 
 def pdf_to_text(file):
-    reader = PdfReader(file)
-    text = ''
-    for page in range(len(reader.pages)):
-        text += reader.pages[page].extract_text()
+    pdf_bytes = file.read()
+    pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+    
+    text = ""
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        # Try extracting blocks of text
+        blocks = page.get_text("blocks")
+        for block in blocks:
+            text += block[4] + "\n"  # Block's text content
+    
+    pdf_document.close()
+
+    if not text.strip():
+        return None  # Return None if no text is extracted
     return text
+
+#To validate whether it is resume or not
+def is_valid_resume(text):
+    # List of common resume keywords
+    resume_keywords = ['experience', 'skills', 'education', 'contact', 'languages', 
+                       'name', 'projects', 'references', 'technical skill', 
+                       'soft skill', 'communication']
+
+    # Convert the text to lowercase for case-insensitive matching
+    text_lower = text.lower()
+
+    # Count the number of matching keywords in the text
+    matched_keywords = [keyword for keyword in resume_keywords if keyword in text_lower]
+    
+    # Define a threshold for validation (e.g., 3 or more keywords must be present)
+    return len(matched_keywords) >= 3
+
+#To check the resume if save in canva
+def extract_images_from_pdf(file):
+    pdf_bytes = file.read()
+    pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+    full_text = ""
+
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        image_list = page.get_images(full=True)
+
+        if image_list:
+            print(f"Page {page_num} contains {len(image_list)} images")
+            for image_index, img in enumerate(image_list, start=1):
+                xref = img[0]
+                base_image = pdf_document.extract_image(xref)
+                image_bytes = base_image["image"]
+
+                # Use OCR to extract text from the image without saving to file
+                image = Image.open(io.BytesIO(image_bytes))
+                extracted_text = pytesseract.image_to_string(image)
+                full_text += extracted_text + "\n"  # Accumulate text from all images
+
+        else:
+            print(f"No images found on page {page_num}")
+
+    pdf_document.close()
+    
+    # Return the accumulated text or None if empty
+    cleaned_text = full_text.strip()
+    return cleaned_text
 
 # Routes
 @app.route("/")
@@ -449,7 +513,7 @@ def delete_job(job_id):
         return jsonify({"error": "Error occurred during job deletion: " + str(e)}), 500
     
 #get all the jobs to seeker
-@app.route('/jobs', methods=['GET'])
+@app.route('/getjobs', methods=['GET'])
 @login_required
 def get_all_jobs():
     jobs = Job.query.all()
@@ -516,7 +580,7 @@ def apply():
         db.session.rollback()
         print(e)
         return jsonify({'success': False, 'message': 'Failed to apply'}), 500
-    
+
 #For recommendation show the recommend jobs, retrieve the jobs based on predicted category
 from sqlalchemy import func    
 @app.route('/jobs', methods=['POST'])
@@ -530,8 +594,26 @@ def fetch_jobs():
     # Check if the file is a PDF or a text file
     if resume.filename.endswith('.pdf'):
         resume_text = pdf_to_text(resume)
+        
+        # If no text found in PDF, try extracting from images
+        if resume_text is None:
+            print("No text found in PDF, attempting to extract images from the PDF.")
+            resume.seek(0)  # Reset file pointer to the start
+            resume_text = extract_images_from_pdf(resume)
+
     else:
         resume_text = resume.read().decode('utf-8')
+
+    # print("Extracted Text:", resume_text)  # Log the extracted text for debugging
+
+    # Validate if the text is likely a resume
+    # Check if resume_text is still None
+    if resume_text is None or resume_text.strip() == "":
+        return jsonify({"message": "The uploaded file does not contain valid resume text."}), 400
+
+    # Perform the resume validation on the extracted text
+    if not is_valid_resume(resume_text):
+        return jsonify({"message": "The uploaded file does not appear to be a valid resume."}), 400
 
     # Predict the category and recommend a job based on resume content
     predicted_category = predict_category(resume_text)

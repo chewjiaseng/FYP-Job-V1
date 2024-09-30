@@ -161,7 +161,7 @@
     methods: {
       fetchJobs() {
         const apiUrl = process.env.VUE_APP_API_URL;
-        axios.get(`${apiUrl}/jobs`, { withCredentials: true })
+        axios.get(`${apiUrl}/getjobs`, { withCredentials: true })
           .then(response => {
             this.jobs = response.data;
           })

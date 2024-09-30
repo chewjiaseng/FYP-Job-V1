@@ -40,44 +40,42 @@
   </v-app-bar>
 </template>
 
-<style scoped>
+<style >
 .custom-navbar {
-  background-color: #4CAF50; /* Navbar background color */
+  background-color: #201a94 !important; /* Replace with your favorite color */
 }
 
 .custom-title {
-  font-size: 1.5rem; /* Title font size */
-  font-family: 'Arial', sans-serif; /* Title font family */
+  font-size: 1.5rem;
+  font-family: 'Arial', sans-serif;
 }
 
 .button-container {
   display: flex;
-  gap: 16px; /* Space between buttons */
-  justify-content: center; /* Center the buttons */
+  gap: 16px;
+  justify-content: center;
 }
 
 .custom-button {
-  color: black; /* Button text color */
-  font-size: 1rem; /* Button text size */
+  color: white !important; /* Change text color to white */
+  font-size: 1rem;
 }
 
 .custom-button:hover {
-  color: #FFD700; /* Button text color on hover */
+  color: #FFD700; /* Text color on hover */
 }
 
 .logo-image {
   margin-top: 20%;
-  height: 55px; /* Logo height */
-  width: auto; /* Keep aspect ratio */
+  height: 55px;
+  width: auto;
 }
 
 @media (max-width: 600px) {
-  /* Adjust logo size for mobile */
   .logo-image {
     height: 45px;
   }
 
-  /* Adjust button size for mobile */
   .custom-button {
     font-size: 0.875rem;
   }

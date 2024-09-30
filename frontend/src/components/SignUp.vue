@@ -1,65 +1,67 @@
 <template>
-  <v-container>
+  <v-container class="signup-container">
     <!-- Include the Navbar component -->
     <Navbar />
 
-    <h1>Sign Up Page</h1>
+    <v-row class="justify-center">
+      <v-col cols="12" md="6" class="signup-form">
+        <h1 class="signup-title">Create Your Account</h1>
 
-    <!-- Username Text Box -->
-    <v-text-field
-      label="Username"
-      outlined
-      clearable
-      class="input-field"
-      v-model="username"
-    ></v-text-field>
+        <!-- Username Text Box -->
+        <v-text-field
+          label="Username"
+          outlined
+          clearable
+          class="input-field"
+          v-model="username"
+        ></v-text-field>
 
-    <!-- Email Text Box -->
-    <v-text-field
-      label="Email"
-      outlined
-      clearable
-      class="input-field"
-      v-model="email"
-    ></v-text-field>
+        <!-- Email Text Box -->
+        <v-text-field
+          label="Email"
+          outlined
+          clearable
+          class="input-field"
+          v-model="email"
+        ></v-text-field>
 
-    <!-- Password Text Box with Eye Icon -->
-    <v-text-field
-      label="Password"
-      :type="showPassword ? 'text' : 'password'"
-      outlined
-      clearable
-      class="input-field"
-      :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-      @click:append="togglePasswordVisibility"
-      v-model="password"
-    ></v-text-field>
+        <!-- Password Text Box with Eye Icon -->
+        <v-text-field
+          label="Password"
+          :type="showPassword ? 'text' : 'password'"
+          outlined
+          clearable
+          class="input-field"
+          :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+          @click:append="togglePasswordVisibility"
+          v-model="password"
+        ></v-text-field>
 
-    <!-- Role Selection Box with Placeholder -->
-    <div class="role-select">
-      <select v-model="selectedRole" class="select-field">
-        <option disabled value="">Select Your Role</option>
-        <option v-for="role in roles" :key="role" :value="role">
-          {{ role }}
-        </option>
-      </select>
-    </div>
+        <!-- Role Selection Box with Placeholder -->
+        <v-select
+          v-model="selectedRole"
+          :items="roles"
+          label="Select Your Role"
+          outlined
+          class="input-field"
+        ></v-select>
 
-    <!-- Register Button -->
-    <v-btn
-      class="register-button"
-      style="background-color: black; color: white;"
-      @click="register"
-      :loading="loading"
-      :disabled="loading"
-    >
-      Register
-    </v-btn>
+        <!-- Register Button -->
+        <v-btn
+          class="register-button"
+          @click="register"
+          :loading="loading"
+          :disabled="loading"
+        >
+          Register
+        </v-btn>
 
-    <!-- Already have an account Link -->
-    <v-btn text color="secondary" class="already-account" @click="goToLogin">
-      Already have an account? Log In
-    </v-btn>
+        <!-- Already have an account Link -->
+        <v-btn text class="already-account" @click="goToLogin">
+          Already have an account? Log In
+        </v-btn>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -80,7 +82,7 @@ export default {
       roles: ['Job Seeker', 'Job Provider'],
       selectedRole: '',
       showPassword: false,
-      loading: false, // Loading state
+      loading: false,
     };
   },
   methods: {
@@ -93,7 +95,6 @@ export default {
         return;
       }
 
-      // Set loading state to true when registration is initiated
       this.loading = true;
 
       const payload = {
@@ -103,31 +104,24 @@ export default {
         role: this.selectedRole,
       };
 
-      const apiUrl = process.env.VUE_APP_API_URL;  // Use the apiUrl from environment variables
+      const apiUrl = process.env.VUE_APP_API_URL;
 
       try {
         const response = await axios.post(`${apiUrl}/signup`, payload);
         if (response.data.success) {
           alert('Registration successful');
-          
-          setTimeout(() => {
-          this.clearForm();  // Clear the form after successful registration
-        }, 100);
-
+          this.clearForm();
         } else {
           alert(response.data.message || 'Registration failed');
         }
       } catch (error) {
         console.error('Error during registration:', error);
         alert('An error occurred. Please try again later.');
-      }finally {
-        // Reset loading state after the process is completed
+      } finally {
         this.loading = false;
       }
-
     },
     clearForm() {
-      // Reset all the form fields to blank
       this.username = '';
       this.email = '';
       this.password = '';
@@ -141,30 +135,74 @@ export default {
 </script>
 
 <style scoped>
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f7f9;
+  padding: 0 20px;
+}
+
+.signup-form {
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.signup-title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
 .input-field {
   margin-bottom: 20px;
 }
 
 .register-button {
-  margin-top: 20px;
+  width: 100%;
+  background-image: linear-gradient(45deg, #42a5f5, #478ed1);
+  color: white;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.register-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .already-account {
-  margin-top: 10px;
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #42a5f5;
+  font-weight: bold;
   text-decoration: underline;
   cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.role-select {
-  margin-bottom: 20px;
+.already-account:hover {
+  color: #1e88e5;
 }
 
-.select-field {
-  width: 100%;
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('@/assets/image1.jpg'); /* Path to the image */
+  background-size: cover; /* Ensure the image covers the entire area */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent the image from repeating */
 }
+
+
 </style>

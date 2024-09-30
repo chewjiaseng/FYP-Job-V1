@@ -2,25 +2,25 @@
     <div>
       <NavbarSeeker :username="username" />
       <v-container class="resume-form" style="margin-top: 20px;">
-        <v-card color="black" dark class="pa-5">
-          <v-card-title class="headline text-center">Resume Screening AI Base System</v-card-title>
+        <v-card class="pa-5" style="background-color: #f9f9f9; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+          <!-- Card Title with contrasting color -->
+          <v-card-title class="headline text-center" style="color: darkblue;">Resume Screening AI-Based System</v-card-title>
           <v-card-text>
-            <p>This system supports TXT and PDF files to be uploaded and will work on the following:</p>
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>Resume Job Categorization</v-list-item-content>
-              </v-list-item>
-              <v-list-item>
-                <v-list-item-content>Resume Job Recommendation</v-list-item-content>
-              </v-list-item>
-            </v-list>
+            <p style="color: #333;">This system supports TXT and PDF files to be uploaded and will work on the following:</p>
+            
+            <!-- Replace v-list with ul and li -->
+            <ul style="padding-left: 20px; color: darkblue;">
+              <li>Resume Job Categorization</li>
+              <li>Resume Job Recommendation</li>
+            </ul>
+            
           </v-card-text>
         </v-card>
 
         <div style="height: 30px;"></div> <!-- Spacer -->
 
         <v-card class="mt-5 pa-5" color="white">
-          <v-card-title class="headline">Upload Your Resume</v-card-title>
+          <v-card-title class="headline" style="color:black ">Upload Your Resume</v-card-title>
           <v-card-text>
             <v-form @submit.prevent="submitResume">
               <v-file-input v-model="file" label="Choose file" required accept=".pdf,.txt"></v-file-input>
@@ -189,29 +189,36 @@ export default {
         const response = await axios.post('/jobs', formData, { withCredentials: true });
         console.log("Jobs response:", response.data); // Log the response data
 
-        // Set the predicted category and recommended job regardless of whether jobs are found
-        this.predictedCategory = response.data.predicted_category;
-        this.recommendedJob = response.data.recommended_job;
+        // Check if the backend detected that the file is not a valid resume
+    if (response.data.message === "The uploaded file does not appear to be a valid resume.") {
+      this.message = response.data.message;  // Display the error message from the backend
+      this.predictedCategory = '';  // Clear category and job recommendations
+      this.recommendedJob = '';
+      this.jobs = [];
+    } else {
+      // Set the predicted category and recommended job if valid resume
+      this.predictedCategory = response.data.predicted_category;
+      this.recommendedJob = response.data.recommended_job;
 
-        // Check if jobs are found
-        if (response.data.jobs && response.data.jobs.length) {
-          this.jobs = response.data.jobs;
-          this.message = '';  // Clear any previous messages
-        } else {
-          this.jobs = [];  // Clear the jobs list if no jobs are found
-          this.message = response.data.message || "No jobs found.";
-        }
-        this.loading = true;
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          this.message = error.response.data.message;  // Display the backend error message
-        } else {
-          this.message = "Error fetching jobs.";
-        }
-      }finally {
-        this.loading = false; // Reset loading at the end
+      // Check if jobs are found
+      if (response.data.jobs && response.data.jobs.length) {
+        this.jobs = response.data.jobs;
+        this.message = '';  // Clear any previous messages
+      } else {
+        this.jobs = [];  // Clear the jobs list if no jobs are found
+        this.message = response.data.message || "No jobs found.";
       }
-    },
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      this.message = error.response.data.message;  // Display the backend error message
+    } else {
+      this.message = "Error fetching jobs.";
+    }
+  } finally {
+    this.loading = false; // Reset loading at the end
+  }
+},
     async fetchJobsByCategory(category) {
       try {
         const response = await axios.get(`/jobs?category=${category}`, { withCredentials: true });
@@ -308,4 +315,23 @@ export default {
   max-width: 800px;
   margin: auto;
 }
+
+.v-card {
+  background-color: #f9f9f9; /* Light background color */
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+.headline {
+  color: #4CAF50; /* Green accent color */
+}
+
+.v-card-text p {
+  color: #333; /* Dark gray text for readability */
+}
+
+.v-list-item-content span {
+  color: blue !important; /* Green text for important items */
+}
+
 </style>
