@@ -7,63 +7,100 @@
         <v-col>
           <h1>Welcome {{ username }}</h1>
         </v-col>
-        <!-- Filter Dropdown with Checkboxes -->
-        <v-col class="text-right">
-          <v-menu offset-y>
+      </v-row>
+
+      <v-row class="d-flex align-center">
+        <!-- Job Search Bar with 'X' Icon to Clear -->
+        <v-col cols="12" sm="5">
+          <v-text-field
+            v-model="searchText"
+            label="Search Job"
+            append-icon="mdi-close"
+            @click:append="clearSearch"
+            @keyup.enter="searchJob"
+          />
+        </v-col>
+
+        <!-- This is for the filter location -->
+        <v-col cols="12" sm="4">
+        <v-menu v-model="locationMenu" offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-bind="attrs"
+              v-on="on"
+              label="Filter by Location"
+              readonly
+              :value="selectedLocation.includes('All') ? 'All' : selectedLocation.join(', ')"
+            />
+          </template>
+          <v-card style="max-height: 300px; overflow-y: auto;"> <!-- Adjust height here -->
+            <v-list>
+              <v-list-item>
+                <v-checkbox
+                  v-model="selectedLocation"
+                  :value="'All'"
+                  label="All"
+                  @change="handleAllSelection"
+                  @click.stop
+                />
+              </v-list-item>
+              <v-list-item v-for="location in locations" :key="location">
+                <v-checkbox
+                  v-model="selectedLocation"
+                  :value="location"
+                  :label="location"
+                  @change="handleLocationSelection"
+                  @click.stop
+                />
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
+      </v-col>
+
+        <!-- Spacer to push buttons to the right -->
+        <v-spacer />
+
+        <!-- This is for the filter category -->
+        <v-col cols="auto" class="pr-2">
+          <v-menu v-model="categoryMenu" offset-y>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn color="primary" v-bind="attrs" v-on="on">
-                Filter Jobs
+              <v-btn color="primary" v-bind="attrs" v-on="on" style="min-width: 100px;">
+                Category
               </v-btn>
             </template>
             <v-card style="max-height: 300px; overflow-y: auto;">
               <v-list>
                 <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="All" label="All" @change="filterJobs"></v-checkbox>
+                  <v-checkbox
+                    v-model="selectedCategories"
+                    :value="'All'"
+                    label="All"
+                    @change="handleAllCategorySelection"
+                    @click.stop
+                  />
                 </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Education" label="Education" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Designer" label="Designer" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Others" label="Others" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Sales" label="Sales" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Finance" label="Finance" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Information Technology" label="Information Technology" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Food & Beverage" label="Food & Beverage" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Marketing" label="Marketing" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Arts" label="Arts" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Customer Service" label="Customer Service" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Human Resources" label="Human Resources" @change="filterJobs"></v-checkbox>
-                </v-list-item>
-                <v-list-item>
-                  <v-checkbox v-model="selectedCategories" value="Accountant" label="Accountant" @change="filterJobs"></v-checkbox>
+                <v-list-item v-for="category in categories" :key="category">
+                  <v-checkbox
+                    v-model="selectedCategories"
+                    :value="category"
+                    :label="category"
+                    @change="handleCategorySelection"
+                    @click.stop
+                  />
                 </v-list-item>
               </v-list>
             </v-card>
           </v-menu>
         </v-col>
-      </v-row>
 
+        <!-- Search Button -->
+        <v-col cols="auto" class="pl-1">
+            <v-btn color="primary" @click="combinedFilter" style="min-width: 100px;">Search</v-btn>
+          </v-col>
+        </v-row>
+
+      <!-- Jobs listing -->
       <v-row>
         <v-col v-for="job in filteredJobs" :key="job.id" cols="12" sm="6" md="4">
           <v-card>
@@ -75,16 +112,10 @@
               <p class="mb-2" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
               <p class="mb-2" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleString() }}</p>
               <p class="mb-2" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
-              <v-btn
-                text
-                @click="toggleExpand(job.id)"
-                :style="{ fontSize: '10px', textDecoration: 'underline', padding: '0', minWidth: '0' }"
-              >
+              <v-btn text @click="toggleExpand(job.id)" style="font-size: 10px; text-decoration: underline; padding: 0; min-width: 0;">
                 {{ isExpanded(job.id) ? 'Show Less' : 'Show More' }}
               </v-btn>
-              <v-btn color="brown" @click="openApplyDialog(job.id)" class="ml-2">
-                Apply
-              </v-btn>
+              <v-btn color="brown" @click="openApplyDialog(job.id)" class="ml-2">Apply</v-btn>
             </v-card-text>
           </v-card>
         </v-col>
@@ -101,12 +132,7 @@
             <v-text-field v-model="application.identification_card" label="Identification Card" required></v-text-field>
             <v-select v-model="application.gender" :items="['Male', 'Female']" label="Gender" required></v-select>
             <v-text-field v-model="application.hp_number" label="HP Number" required></v-text-field>
-            <v-file-input
-              v-model="application.resume_pdf"
-              label="Upload Resume (optional)"
-              accept=".pdf"
-              prepend-icon="mdi-paperclip"
-            ></v-file-input>
+            <v-file-input v-model="application.resume_pdf" label="Upload Resume (optional)" accept=".pdf" prepend-icon="mdi-paperclip"></v-file-input>
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -123,6 +149,7 @@
     </v-snackbar>
   </div>
 </template>
+
 
 <script>
 import NavbarSeeker from './NavbarSeeker.vue';
@@ -154,6 +181,14 @@ export default {
         color: ''
       },
       selectedCategories: ['All'], // Selected categories for filtering
+      allSelected: false, // Track if 'All' is selected
+      categories: [ 'Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+      searchText: '', // Search text for job names
+      selectedLocation: ['All'], // Selected location for filtering
+      locations: ['Johor', 'Selangor', 'Melaka','Kuala Lumpur','Pahang','Pulau Pinang','Kelantan','Kedah','Perlis','Perak'], // Available locations
+      locationMenu: false, // State for location dropdown menu
+      categoryMenu: false
+
     };
   },
   created() {
@@ -175,15 +210,125 @@ export default {
           console.error('Error fetching jobs:', error);
         });
     },
-    filterJobs() {
-      if (this.selectedCategories.includes('All')) {
-        this.filteredJobs = this.jobs;
+    clearSearch() {
+      this.searchText = '';
+      this.searchJob();
+    },
+
+    // Method for searching jobs by name
+    searchJob() {
+      this.filteredJobs = this.jobs.filter(job =>
+        job.job_name.toLowerCase().includes(this.searchText.toLowerCase())
+      );
+    },
+
+    handleAllSelection(isChecked) {
+    if (isChecked) {
+      // If 'All' is checked, clear other selections
+      this.selectedLocation = ['All'];
+    } else {
+      // If 'All' is unchecked, remove it from selectedLocation
+      const index = this.selectedLocation.indexOf('All');
+      if (index > -1) {
+        this.selectedLocation.splice(index, 1);
+      }
+    }
+    this.locationMenu = true; // Keep dropdown open
+    this.filterLocation(); // Re-filter jobs based on updated selection
+  },
+
+  handleLocationSelection() {
+    // Check if any location is selected
+    if (this.selectedLocation.length > 1 && this.selectedLocation.includes('All')) {
+      // If 'All' is selected along with other locations, remove 'All'
+      const index = this.selectedLocation.indexOf('All');
+      if (index > -1) {
+        this.selectedLocation.splice(index, 1); // Deselect 'All'
+      }
+    }
+
+    this.locationMenu = true; // Keep dropdown open
+    this.filterLocation(); // Re-filter jobs based on updated selection
+  },
+
+  // Method for filtering jobs by location
+  filterLocation() {
+    if (this.selectedLocation.includes('All')) {
+      this.filteredJobs = this.jobs; // Show all jobs if 'All' is selected
+    } else {
+      this.filteredJobs = this.jobs.filter(job =>
+        this.selectedLocation.some(location =>
+          job.working_place.toLowerCase().includes(location.toLowerCase())
+        )
+      );
+    }
+  },
+
+    // Method for handling the "All" selection
+    selectAllLocations() {
+      if (this.selectedLocation.includes('All')) {
+        this.selectedLocation = ['All']; // Keep only 'All' selected
+        this.filteredJobs = this.jobs; // Display all jobs
       } else {
-        this.filteredJobs = this.jobs.filter(job =>
-          this.selectedCategories.includes(job.job_category)
+        this.selectedLocation = []; // Deselect all
+      }
+    },
+
+    // Combined filter for both search and location
+    combinedFilter() {
+      let filteredByText = this.jobs.filter(job =>
+        job.job_name.toLowerCase().includes(this.searchText.toLowerCase())
+      );
+
+      if (this.selectedLocation.includes('All') || this.selectedLocation.length === 0) {
+        this.filteredJobs = filteredByText; // If 'All' or no location is selected, just use search results
+      } else {
+        this.filteredJobs = filteredByText.filter(job =>
+          this.selectedLocation.some(location =>
+            job.working_place.toLowerCase().includes(location.toLowerCase())
+          )
         );
       }
     },
+    handleAllCategorySelection(isChecked) {
+    if (isChecked) {
+      // If 'All' is checked, clear other selections
+      this.selectedCategories = ['All'];
+    } else {
+      // If 'All' is unchecked, remove it from selectedCategories
+      const index = this.selectedCategories.indexOf('All');
+      if (index > -1) {
+        this.selectedCategories.splice(index, 1);
+      }
+    }
+    this.categoryMenu = true; // Keep dropdown open
+    this.filterCategory(); // Re-filter jobs based on updated selection
+  },
+
+  handleCategorySelection() {
+    // Check if 'All' is selected
+    if (this.selectedCategories.length > 1 && this.selectedCategories.includes('All')) {
+      // If 'All' is selected along with other categories, remove 'All'
+      const index = this.selectedCategories.indexOf('All');
+      if (index > -1) {
+        this.selectedCategories.splice(index, 1); // Deselect 'All'
+      }
+    }
+
+    this.categoryMenu = true; // Keep dropdown open
+    this.filterCategory(); // Re-filter jobs based on updated selection
+  },
+
+  filterCategory() {
+    if (this.selectedCategories.includes('All')) {
+      this.filteredJobs = this.jobs; // Show all jobs when 'All' is selected
+    } else {
+      this.filteredJobs = this.jobs.filter(job =>
+        this.selectedCategories.some(category => job.job_category === category)
+      );
+    }
+  },
+  
     toggleExpand(jobId) {
       this.$set(this.expandedJobs, jobId, !this.expandedJobs[jobId]);
     },
