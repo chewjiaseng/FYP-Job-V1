@@ -18,6 +18,8 @@
             append-icon="mdi-close"
             @click:append="clearSearch"
             @keyup.enter="searchJob"
+            class="custom-text-field"
+            outlined
           />
         </v-col>
 
@@ -31,6 +33,8 @@
               label="Filter by Location"
               readonly
               :value="selectedLocation.includes('All') ? 'All' : selectedLocation.join(', ')"
+              class="custom-text-field"
+              outlined
             />
           </template>
           <v-card style="max-height: 300px; overflow-y: auto;"> <!-- Adjust height here -->
@@ -65,7 +69,7 @@
         <v-col cols="auto" class="pr-2">
           <v-menu v-model="categoryMenu" offset-y>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn color="primary" v-bind="attrs" v-on="on" style="min-width: 100px;">
+              <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-top: -25px;">
                 Category
               </v-btn>
             </template>
@@ -96,30 +100,34 @@
 
         <!-- Search Button -->
         <v-col cols="auto" class="pl-1">
-            <v-btn color="primary" @click="combinedFilter" style="min-width: 100px;">Search</v-btn>
+            <v-btn color="custom-search-btn" @click="combinedFilter" style="min-width: 100px; margin-top: -25px;">Search</v-btn>
           </v-col>
         </v-row>
 
       <!-- Jobs listing -->
       <v-row>
         <v-col v-for="job in filteredJobs" :key="job.id" cols="12" sm="6" md="4">
-          <v-card>
-            <v-card-title>{{ job.job_name }}</v-card-title>
-            <v-card-subtitle>{{ job.job_category }}</v-card-subtitle>
+          <v-card class="job-card">
+            <v-card-title class="job-title">
+              <v-icon class="mr-2">{{ categoryIcons[job.job_category] || 'mdi-briefcase' }}</v-icon>
+              {{ job.job_name }}
+            </v-card-title>
+            <v-card-subtitle class="job-category">{{ job.job_category }}</v-card-subtitle>
             <v-card-text>
-              <p class="mb-2"><strong>Place:</strong> {{ job.working_place }}</p>
-              <p class="mb-2"><strong>Hours:</strong> {{ job.working_hours }}</p>
-              <p class="mb-2" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
-              <p class="mb-2" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleString() }}</p>
-              <p class="mb-2" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
-              <v-btn text @click="toggleExpand(job.id)" style="font-size: 10px; text-decoration: underline; padding: 0; min-width: 0;">
+              <p class="job-detail left-align"><strong>Place:</strong> {{ job.working_place }}</p>
+              <p class="job-detail left-align"><strong>Hours:</strong> {{ job.working_hours }}</p>
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleString() }}</p>
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
+              <v-btn text class="expand-btn" @click="toggleExpand(job.id)">
                 {{ isExpanded(job.id) ? 'Show Less' : 'Show More' }}
               </v-btn>
-              <v-btn color="brown" @click="openApplyDialog(job.id)" class="ml-2">Apply</v-btn>
+              <v-btn color="brown" @click="openApplyDialog(job.id)" class="apply-btn" style="color: aliceblue;">Apply</v-btn>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
+
     </v-container>
 
     <!-- Apply Dialog -->
@@ -187,7 +195,21 @@ export default {
       selectedLocation: ['All'], // Selected location for filtering
       locations: ['Johor', 'Selangor', 'Melaka','Kuala Lumpur','Pahang','Pulau Pinang','Kelantan','Kedah','Perlis','Perak'], // Available locations
       locationMenu: false, // State for location dropdown menu
-      categoryMenu: false
+      categoryMenu: false,
+      categoryIcons: {
+        'Education': 'mdi-school',                 // Icon for Education
+        'Designer': 'mdi-pencil',                  // Icon for Designer
+        'Sales': 'mdi-cart',                       // Icon for Sales
+        'Finance': 'mdi-cash',                     // Icon for Finance
+        'Information Technology': 'mdi-laptop',    // Icon for IT
+        'Food & Beverage': 'mdi-food',             // Icon for Food & Beverage
+        'Marketing': 'mdi-bullhorn',               // Icon for Marketing
+        'Arts': 'mdi-palette',                     // Icon for Arts
+        'Customer Service': 'mdi-account-tie',     // Icon for Customer Service
+        'Human Resources': 'mdi-account-group',     // Icon for Human Resources
+        'Accountant': 'mdi-calculator',            // Icon for Accountant
+        // Add more mappings as needed
+      },
 
     };
   },
@@ -412,4 +434,75 @@ v-card {
   padding: 0;
   min-width: 0;
 }
+
+.custom-category-btn {
+  background: linear-gradient(45deg, #ff4081, #ff80ab); /* Fancy gradient color */
+  color: white !important;
+  border-radius: 8px;
+}
+
+.custom-search-btn {
+  background: linear-gradient(45deg, #ffa726, #ffeb3b); /* From orange to yellow */
+  color: white;
+  border-radius: 8px;
+}
+
+.custom-category-btn:hover, .custom-search-btn:hover {
+  opacity: 0.8; /* Slight opacity on hover */
+}
+
+.job-card {
+  background: linear-gradient(135deg, #f7f8fa, #ffe37d); /* Light gradient background */
+  border-radius: 12px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Hover animation */
+  margin-bottom: 20px; /* Spacing between job containers */
+}
+
+.job-card:hover {
+  transform: translateY(-5px); /* Lifting effect on hover */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.job-title {
+  font-size: 1.2em; /* Increase font size */
+  font-weight: bold;
+  color: #3f51b5; /* Primary color for the job title */
+}
+
+.job-category {
+  color: #757575; /* Grey color for the category */
+  font-size: 0.9em;
+}
+
+.job-detail {
+  color: #555; /* Darker text for details */
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.expand-btn {
+  font-size: 0.8em;
+  text-decoration: underline;
+  color: #009688; /* Teal color for the 'Show More/Less' link */
+}
+
+.apply-btn {
+  background-color: #ff5722; /* Deep orange color */
+  color: white;
+  font-weight: bold;
+  border-radius: 20px;
+  padding: 6px 12px;
+  transition: background-color 0.3s ease;
+}
+
+.apply-btn:hover {
+  background-color: #e64a19; /* Darker orange on hover */
+}
+
+.left-align {
+  text-align: left; /* Ensure text is aligned to the left */
+}
+
+
 </style>

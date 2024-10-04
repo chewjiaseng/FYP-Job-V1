@@ -3,7 +3,6 @@ import Router from 'vue-router';
 import HomePage from '@/components/HomePage.vue';
 import ResumeForm from '@/components/ResumeForm.vue';
 import JobSearch from '@/components/JobSearch.vue';
-import AboutUs from '@/components/AboutUs.vue';
 import Login from '@/components/Login.vue';
 import JobProvider from '@/components/JobProvider.vue';
 import SignUp from '@/components/SignUp.vue';
@@ -37,11 +36,6 @@ const router = new Router({
       path: '/job-search',
       name: 'JobSearch',
       component: JobSearch,
-    },
-    {
-      path: '/about-us',
-      name: 'AboutUs',
-      component: AboutUs,
     },
     {
       path: '/login',

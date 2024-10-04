@@ -11,9 +11,9 @@
         <!-- Add v-btn-toggle to collapse buttons into a menu on small screens -->
         <v-col cols="auto" class="button-container d-none d-md-flex"> 
           <v-btn text class="custom-button" to="/">Home</v-btn>
-          <v-btn text class="custom-button" to="/job-search">Job Search</v-btn>
+          <v-btn text class="custom-button" to="/job-search">Job Seeker</v-btn>
           <v-btn text class="custom-button" to="/job-provide">Job Provide</v-btn>
-          <v-btn text class="custom-button" to="/about-us">About Us</v-btn>
+          <!-- <v-btn text class="custom-button" to="/about-us">About Us</v-btn> -->
           <v-btn text class="custom-button" to="/login">Login</v-btn>
         </v-col>
 
@@ -29,7 +29,7 @@
               <v-list-item link to="/">Home</v-list-item>
               <v-list-item link to="/job-search">Job Search</v-list-item>
               <v-list-item link to="/job-provide">Job Provide</v-list-item>
-              <v-list-item link to="/about-us">About Us</v-list-item>
+              <!-- <v-list-item link to="/about-us">About Us</v-list-item> -->
               <v-list-item link to="/login">Login</v-list-item>
             </v-list>
           </v-menu>

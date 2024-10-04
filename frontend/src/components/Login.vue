@@ -23,9 +23,9 @@
     <!-- Username/Email Text Box -->
     <v-text-field
       v-model="identifier"
-      style="background-color: white; border-radius: 8px;" 
-      label="Username / E-mail"
       
+      label="Username / E-mail"
+      outlined
       clearable
       class="input-field smaller-field"
     ></v-text-field>
@@ -40,7 +40,7 @@
       class="input-field smaller-field"
       :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
       @click:append="togglePasswordVisibility"
-      style="background-color: white; border-radius: 8px;" 
+      outlined
     ></v-text-field>
 
 
@@ -49,7 +49,7 @@
       v-model="selectedRole"
       :items="roles"
       label="Select Your Role"
-      
+      outlined
       class="role-select smaller-field"
     ></v-select>
 
@@ -199,44 +199,49 @@ export default {
   padding: 8px; /* Smaller padding */
 }
 
-/* Input fields and select styling */
-.input-field {
-  margin-bottom: 15px; /* Add margin at the bottom for spacing */
+/* Password Text Box Styling */
+::v-deep .input-field .v-input__control {
+  padding: 0px !important; /* Remove extra padding */
+  border-radius: 8px !important; /* Ensure rounded corners */
+  box-sizing: border-box; /* Include border and padding in the element's size */
 }
 
-/* Adjust the input control container */
-.input-field .v-input__control {
-  background-color: white; /* Set white background for the input control */
-  border: none; /* Remove the outer border */
-  border-radius: 8px; /* Rounded corners */
-  box-sizing: border-box; /* Ensure padding and border are included in width and height */
+::v-deep .input-field .v-input__slot {
+  background-color: white !important; /* White background inside the border */
+  border-radius: 8px !important; /* Rounded corners */
+  padding: 8px !important; /* Add padding inside the input */
+  box-sizing: border-box; /* Ensure the input content fits within the border */
 }
 
-/* Style for the input itself */
-.input-field input {
-  background-color: white; /* White background for input */
-  padding: 10px; /* Add padding for comfort */
-  border: none; /* Remove inner border */
-  border-radius: 8px; /* Rounded corners */
-  width: 100%; /* Full width of the container */
+::v-deep .input-field input {
+  background-color: transparent !important; /* Transparent background */
+  padding: 0px !important; /* No extra padding */
+  border: none !important; /* No internal borders */
+  width: 100%; /* Full width for input */
 }
 
-/* Ensure that the input has no outline when focused */
-.input-field input:focus {
-  outline: none; /* Remove default outline */
+::v-deep .input-field .v-input__control:focus-within {
+  border-color: #3f51b5 !important; /* Focus border color */
 }
 
-/* Maintain the border color when focused */
-.input-field .v-input__control:focus-within {
-  border-color: #3f51b5; /* Maintain the border color when focused */
+/* Role Selection Box (v-select) Styling */
+::v-deep .role-select .v-input__control {
+  padding: 0px !important; /* Remove extra padding */
+  border-radius: 8px !important; /* Rounded corners */
+  box-sizing: border-box; /* Include padding and borders in size */
 }
 
-/* Role selection box styling */
-.role-select {
-  margin-bottom: 15px; /* Add margin at the bottom for spacing */
-  background-color: white; /* Ensure background is white */
-  border-radius: 8px; /* Rounded corners */
+::v-deep .role-select .v-input__slot {
+  background-color: white !important; /* White background */
+  border-radius: 8px !important; /* Ensure rounded corners */
+  padding: 8px !important; /* Add padding inside the select */
+  box-sizing: border-box; /* Ensure content fits within the borders */
 }
+
+::v-deep .role-select .v-input__control:focus-within {
+  border-color: #3f51b5 !important; /* Focus border color */
+}
+
 
 
 /* Ensure the button maintains a clean look */
