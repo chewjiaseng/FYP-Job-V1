@@ -3,7 +3,7 @@
     "@mdi/font": "^7.4.47",
     "@vue/cli-service": "^5.0.8",
     "axios": "^1.7.4",
-    "chart.js": "^4.4.4",
+    "chart.js": "^3.9.1",
     "lodash": "^4.17.21",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^3.6.5",
