@@ -848,7 +848,30 @@ def delete_application(application_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
-   
+
+#Count the number of the user,jobs and applications
+@app.route('/counts', methods=['GET'])
+def get_counts():
+    try:
+        # Get the count of users
+        users_count = User.query.count()
+
+        # Get the count of jobs
+        jobs_count = Job.query.count()
+
+        # Get the count of applications
+        applications_count = Application.query.count()
+
+        # Return the counts as a JSON response
+        return jsonify({
+            "usersCount": users_count,
+            "jobsCount": jobs_count,
+            "applicationsCount": applications_count
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+  
 
 if __name__ == "__main__":
     # Ensure the session directory exists

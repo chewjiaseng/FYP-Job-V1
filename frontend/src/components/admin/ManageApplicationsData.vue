@@ -130,6 +130,8 @@ export default {
       snackbarText: "",
       snackbarType: "",
       removeResume: false, // New property for managing resume removal
+      newResumePdf: null, // Declare newResumePdf here
+
     };
   },
   methods: {
