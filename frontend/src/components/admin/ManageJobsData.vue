@@ -1,50 +1,48 @@
 <template>
-    <v-container>
-  
-      <!-- Jobs Table with Sorting -->
-      <v-simple-table class="aligned-table">
-        <thead>
-      <tr>
-        <th @click="sortTable('job_name')">Job Name
-          <v-icon>{{ sortBy === 'job_name' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
-        </th>
-        <th @click="sortTable('job_category')">Category
-          <v-icon>{{ sortBy === 'job_category' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
-        </th>
-        <th @click="sortTable('salary')">Salary
-          <v-icon>{{ sortBy === 'salary' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
-        </th>
-        <th @click="sortTable('working_place')">Working Place
-          <v-icon>{{ sortBy === 'working_place' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
-        </th>
-        <th @click="sortTable('working_hours')">Working Hours
-          <v-icon>{{ sortBy === 'working_hours' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
-        </th>
-        <th @click="sortTable('created_at')">Created At
-          <v-icon>{{ sortBy === 'created_at' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
-        </th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-        <tbody>
-          <tr v-for="job in sortedJobs" :key="job.id">
-            <td>{{ job.job_name }}</td>
-            <td>{{ job.job_category }}</td>
-            <td>{{ job.salary }}</td>
-            <td>{{ job.working_place }}</td>
-            <td>{{ job.working_hours }}</td>
-            <td>{{ new Date(job.created_at).toLocaleDateString() }}</td>
-            <td>
-              <v-btn icon small @click="openEditDialog(job)">
-                <v-icon>mdi-pencil</v-icon>
-              </v-btn>
-              <v-btn icon small @click="confirmDelete(job.id)">
-                <v-icon color="red">mdi-delete</v-icon>
-              </v-btn>
-            </td>
-          </tr>
-        </tbody>
-      </v-simple-table>
+  <v-container fluid class="manage-user-container">
+    <v-simple-table class="aligned-table">
+      <thead>
+        <tr>
+          <th @click="sortTable('job_name')" style="color: white;">Job Name
+            <v-icon>{{ sortBy === 'job_name' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th @click="sortTable('job_category')" style="color: white;">Category
+            <v-icon>{{ sortBy === 'job_category' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th @click="sortTable('salary')" style="color: white;">Salary
+            <v-icon>{{ sortBy === 'salary' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th @click="sortTable('working_place')" style="color: white;">Working Place
+            <v-icon>{{ sortBy === 'working_place' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th @click="sortTable('working_hours')" style="color: white;">Working Hours
+            <v-icon>{{ sortBy === 'working_hours' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th @click="sortTable('created_at')" style="color: white;">Created At
+            <v-icon>{{ sortBy === 'created_at' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th style="color: white;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="job in sortedJobs" :key="job.id">
+          <td>{{ job.job_name }}</td>
+          <td>{{ job.job_category }}</td>
+          <td>{{ job.salary }}</td>
+          <td>{{ job.working_place }}</td>
+          <td>{{ job.working_hours }}</td>
+          <td>{{ new Date(job.created_at).toLocaleDateString() }}</td>
+          <td>
+            <v-btn icon small @click="openEditDialog(job)">
+              <v-icon color="blue">mdi-pencil</v-icon>
+            </v-btn>
+            <v-btn icon small @click="confirmDelete(job.id)">
+              <v-icon color="red">mdi-delete</v-icon>
+            </v-btn>
+          </td>
+        </tr>
+      </tbody>
+    </v-simple-table>
   
       <!-- Edit Job Dialog -->
       <v-dialog v-model="dialog" max-width="600px">
@@ -102,19 +100,18 @@
 
       <!-- Back and Create Job Button -->
       <v-row justify="space-between" class="button-row">
-        <v-btn color="primary" @click="goBack">Back</v-btn>
-        <v-btn icon @click="openCreateJobDialog">
-          <v-icon>mdi-plus-circle</v-icon>
-        </v-btn>
-      </v-row>
-  
-      <!-- Snackbar for Notifications -->
-      <v-snackbar v-model="snackbar" :color="snackbarType">
-        {{ snackbarText }}
-        <v-btn text @click="snackbar = false">Close</v-btn>
-      </v-snackbar>
-    </v-container>
-  </template>
+      <v-btn color="blue" @click="goBack">Back</v-btn>
+      <v-btn icon @click="openCreateJobDialog">
+        <v-icon color="green">mdi-plus-circle</v-icon>
+      </v-btn>
+    </v-row>
+
+    <v-snackbar v-model="snackbar" :color="snackbarType">
+      {{ snackbarText }}
+      <v-btn text @click="snackbar = false">Close</v-btn>
+    </v-snackbar>
+  </v-container>
+</template>
   
   <script>
   import axios from 'axios';
@@ -272,19 +269,39 @@
   </script>
   
   <style scoped>
-  .aligned-table th {
-    cursor: pointer;
-  }
-  
-  .button-row {
-    margin-top: 20px;
-  }
-
-  .aligned-table th,
-.aligned-table td {
-  text-align: left;
+.manage-user-container {
+  background-color: #f4f6f8; /* Light gray background */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-
-  </style>
+.aligned-table {
+  margin-top: 20px;
   
+}
+
+.aligned-table th {
+  cursor: pointer;
+  background-color: #1976d2; /* Blue header background */
+  color: white;
+}
+
+.aligned-table th,
+.aligned-table td {
+  text-align: left;
+  padding: 10px;
+}
+
+.button-row {
+  margin-top: 20px;
+}
+
+.v-btn {
+  transition: background-color 0.3s;
+}
+
+.v-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+</style>

@@ -65,7 +65,12 @@ export default defineComponent({
 .chart-container {
   width: 100%;
   height: 500px;
+  background: linear-gradient(135deg, #ffffff 0%, #bedeff 100%); /* Soft yellow to light gold gradient */
+  border-radius: 12px; /* Rounded corners */
+  padding: 20px; /* Padding around the chart */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
 }
+
 canvas {
   width: 100%;
   height: 100%;

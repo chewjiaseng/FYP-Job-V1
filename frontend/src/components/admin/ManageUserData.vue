@@ -1,116 +1,118 @@
 <template>
-    <v-container>
-      <!-- User Table -->
-      <v-simple-table class="aligned-table">
-        <thead>
-          <tr>
-            <th style="width: 18%">Username</th>
-            <th style="width: 30%">Email</th> <!-- Reduced width -->
-            <th style="width: 17%">Role</th>
-            <th style="width: 20%">Password</th> <!-- Increased width -->
-            <th style="width: 15%">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in users" :key="user.username">
-            <td>{{ user.username }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.role }}</td>
-            <td>{{ user.password ? '******' : 'N/A' }}</td> <!-- Masked password -->
-            <td>
-              <v-icon @click="editUser(user)">mdi-pencil</v-icon>
-              <v-icon @click="confirmDelete(user)">mdi-delete</v-icon>
-            </td>
-          </tr>
-        </tbody>
-      </v-simple-table>
+  <v-container fluid class="manage-user-container">
+    <!-- User Table -->
+    <v-simple-table class="aligned-table">
+      <thead>
+        <tr>
+          <th style="width: 18%">Username</th>
+          <th style="width: 30%">Email</th>
+          <th style="width: 17%">Role</th>
+          <th style="width: 20%">Password</th>
+          <th style="width: 15%">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user in users" :key="user.username">
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.password ? '******' : 'N/A' }}</td>
+          <td>
+            <v-icon @click="editUser(user)" class="action-icon">mdi-pencil</v-icon>
+            <v-icon @click="confirmDelete(user)" class="action-icon">mdi-delete</v-icon>
+          </td>
+        </tr>
+      </tbody>
+    </v-simple-table>
 
-      <!-- Back Button -->
-      <v-row justify="space-between" class="button-row">
-        <v-btn color="primary" @click="goBack">Back</v-btn>
-        <v-btn icon @click="dialogAddUser = true">
-          <v-icon>mdi-plus-circle</v-icon>
-        </v-btn>
-      </v-row>
+    <!-- Back Button -->
+    <v-row justify="space-between" class="button-row">
+      <v-btn color="primary" @click="goBack" class="back-button">Back</v-btn>
+      <v-btn color="green" icon @click="dialogAddUser = true" class="add-button" style="border-radius: 50%;">
+        <v-icon style="color: white;">mdi-plus</v-icon>
+      </v-btn>
 
-      <!-- Edit User Dialog -->
-      <v-dialog v-model="dialog" max-width="600px">
-        <v-card>
-          <v-card-title>Edit User</v-card-title>
-          <v-card-text>
-            <v-form>
-              <v-text-field v-model="editUserData.username" label="Username"></v-text-field>
-              <v-text-field v-model="editUserData.email" label="Email"></v-text-field>
+    </v-row>
 
-              <!-- Password field with eye icon for toggling visibility -->
-              <v-text-field
-                v-model="editUserData.password"
-                :type="showPassword ? 'text' : 'password'"
-                label="Password"
-                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append="togglePasswordVisibility"
-              ></v-text-field>
+    <!-- Edit User Dialog -->
+    <v-dialog v-model="dialog" max-width="600px">
+      <v-card>
+        <v-card-title class="dialog-title">Edit User</v-card-title>
+        <v-card-text>
+          <v-form>
+            <v-text-field v-model="editUserData.username" label="Username"></v-text-field>
+            <v-text-field v-model="editUserData.email" label="Email"></v-text-field>
 
-              <v-text-field v-model="editUserData.role" label="Role" :readonly="true" style="background-color: #f0f0f0;"></v-text-field>
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" @click="updateUser" :loading="loading" :disabled="loading">Update</v-btn>
-            <v-btn @click="dialog = false">Cancel</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+            <v-text-field
+              v-model="editUserData.password"
+              :type="showPassword ? 'text' : 'password'"
+              label="Password"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              @click:append="togglePasswordVisibility"
+            ></v-text-field>
 
-      <!-- Delete Confirmation Dialog -->
-      <v-dialog v-model="deleteDialog" max-width="400px">
-        <v-card>
-          <v-card-title>Confirm Delete</v-card-title>
-          <v-card-text>Are you sure you want to delete this user?</v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" @click="deleteUser(deleteUserData)" :loading="loading" :disabled="loading">Yes</v-btn>
-            <v-btn @click="deleteDialog = false">Cancel</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+            <v-text-field v-model="editUserData.role" label="Role" :readonly="true" class="readonly-field"></v-text-field>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="updateUser" :loading="loading" :disabled="loading">Update</v-btn>
+          <v-btn @click="dialog = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-      <v-dialog v-model="dialogAddUser" max-width="600px">
-        <v-card>
-          <v-card-title>Add User</v-card-title>
-          <v-card-text>
-            <v-form>
-              <v-text-field v-model="newUser.username" label="Username"></v-text-field>
-              <v-text-field v-model="newUser.email" label="Email"></v-text-field>
+    <!-- Delete Confirmation Dialog -->
+    <v-dialog v-model="deleteDialog" max-width="400px">
+      <v-card>
+        <v-card-title class="dialog-title">Confirm Delete</v-card-title>
+        <v-card-text>Are you sure you want to delete this user?</v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="deleteUser(deleteUserData)" :loading="loading" :disabled="loading">Yes</v-btn>
+          <v-btn @click="deleteDialog = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-              <v-text-field
-                v-model="newUser.password"
-                :type="showPassword ? 'text' : 'password'"
-                label="Password"
-                :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                @click:append="togglePasswordVisibility"
-              ></v-text-field>
+    <!-- Add User Dialog -->
+    <v-dialog v-model="dialogAddUser" max-width="600px">
+      <v-card>
+        <v-card-title class="dialog-title">Add User</v-card-title>
+        <v-card-text>
+          <v-form>
+            <v-text-field v-model="newUser.username" label="Username"></v-text-field>
+            <v-text-field v-model="newUser.email" label="Email"></v-text-field>
 
-              <v-select
-                v-model="newUser.role"
-                :items="roles"
-                label="Role"
-                placeholder="Select Role"
-              ></v-select>
-            </v-form>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn color="primary" @click="addUser" :loading="loading" :disabled="loading">Add</v-btn>
-            <v-btn @click="dialogAddUser = false">Cancel</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+            <v-text-field
+              v-model="newUser.password"
+              :type="showPassword ? 'text' : 'password'"
+              label="Password"
+              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+              @click:append="togglePasswordVisibility"
+            ></v-text-field>
 
-      <!-- Snackbar for Notifications -->
-      <v-snackbar v-model="snackbar" :color="snackbarType">
-        {{ snackbarText }}
-        <v-btn text @click="snackbar = false">Close</v-btn>
-      </v-snackbar>
-    </v-container>
+            <v-select
+              v-model="newUser.role"
+              :items="roles"
+              label="Role"
+              placeholder="Select Role"
+            ></v-select>
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="addUser" :loading="loading" :disabled="loading">Add</v-btn>
+          <v-btn @click="dialogAddUser = false">Cancel</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar for Notifications -->
+    <v-snackbar v-model="snackbar" :color="snackbarType">
+      {{ snackbarText }}
+      <v-btn text @click="snackbar = false">Close</v-btn>
+    </v-snackbar>
+  </v-container>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -243,12 +245,49 @@ export default {
 </script>
 
 <style scoped>
-.aligned-table th,
-.aligned-table td {
-  text-align: left;
+.manage-user-container {
+  background-color: #f4f6f8; /* Light gray background for the entire container */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.aligned-table {
+  margin-top: 20px;
+  max-width: 800px; /* Set max width for the table */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.action-icon {
+  cursor: pointer;
+  margin: 0 8px;
 }
 
 .button-row {
   margin-top: 20px;
 }
+
+.dialog-title {
+  font-weight: bold;
+  font-size: 20px;
+  color: #3f51b5; /* Darker shade for title */
+}
+
+.back-button {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.add-button {
+  background-color: #4caf50;
+  color: white;
+}
+
+.readonly-field {
+  background-color: #f4f6f8; /* Light grey background for readonly fields */
+  color: #888; /* Grey text color */
+}
+
 </style>
+
