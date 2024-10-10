@@ -250,6 +250,8 @@ export default {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-height: 100vh; /* Ensure the container fills the screen height */
+  position: relative; /* Make it the reference for absolutely positioned elements */
 }
 
 .aligned-table {
@@ -265,7 +267,11 @@ export default {
 }
 
 .button-row {
-  margin-top: 20px;
+  position: absolute; /* Fix the button row to the bottom */
+  bottom: 20px; /* Keep some spacing from the bottom */
+  left: 0;
+  right: 0;
+  padding: 0 20px;
 }
 
 .dialog-title {

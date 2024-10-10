@@ -274,6 +274,10 @@
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-height: 100vh; /* Ensures the container covers the full screen height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Keeps the buttons at the bottom */
 }
 
 .aligned-table {
@@ -294,8 +298,12 @@
 }
 
 .button-row {
-  margin-top: 20px;
-}
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  padding: 0 20px;}
 
 .v-btn {
   transition: background-color 0.3s;
