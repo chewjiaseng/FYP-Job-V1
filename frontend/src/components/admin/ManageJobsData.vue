@@ -1,5 +1,126 @@
 <template>
-  <v-container fluid class="manage-user-container">
+  <v-container fluid class="manage-user-container" style="padding-top: 0px; margin:0;">
+    <!-- Search Box and Location Filter -->
+    <div style="margin-top: 20px; padding: 0;">
+    <v-row class="search-row no-vertical-spacing" align="center" >
+        <v-col cols="8" sm="6" style="padding: 0;">
+          <v-text-field
+            v-model="searchQuery"
+            label="Search Job Name"
+            outlined
+            @input="filterJobs"
+          >
+            <template v-slot:append>
+              <v-btn v-if="searchQuery" icon @click="searchQuery = ''">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
+        </v-col>
+
+        <v-col cols="3" sm="3">
+          <v-menu v-model="locationMenu" offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-bind="attrs"
+                v-on="on"
+                label="Filter by Location"
+                readonly
+                :value="selectedLocation.includes('All') ? 'All' : selectedLocation.join(', ')"
+                outlined
+              />
+            </template>
+            <v-card style="max-height: 300px; overflow-y: auto;">
+              <v-list>
+                <v-list-item>
+                  <v-checkbox
+                    v-model="selectedLocation"
+                    :value="'All'"
+                    label="All"
+                    @change="handleAllSelection"
+                    @click.stop
+                  />
+                </v-list-item>
+                <v-list-item v-for="location in locations" :key="location">
+                  <v-checkbox
+                    v-model="selectedLocation"
+                    :value="location"
+                    :label="location"
+                    @change="handleLocationSelection"
+                    @click.stop
+                  />
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+        </v-col>
+
+        <!-- Button Container for Category and Date Filters -->
+        <v-col cols="4" sm="3" class="d-flex justify-start" style="margin-top: -30px;">
+          <div class="d-flex flex-wrap align-center" style="flex-grow: 1;">
+            <!-- Category Filter -->
+            <v-menu v-model="categoryMenu" offset-y class="flex-grow-1">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-right: 10px;">
+                  Category
+                </v-btn>
+              </template>
+              <v-card style="max-height: 300px; overflow-y: auto;">
+                <v-list>
+                  <v-list-item>
+                    <v-checkbox
+                      v-model="selectedCategories"
+                      :value="'All'"
+                      label="All"
+                      @change="handleAllCategorySelection"
+                      @click.stop
+                    />
+                  </v-list-item>
+                  <v-list-item v-for="category in categories" :key="category">
+                    <v-checkbox
+                      v-model="selectedCategories"
+                      :value="category"
+                      :label="category"
+                      @change="handleCategorySelection"
+                      @click.stop
+                    />
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+
+            <!-- Date Filter -->
+            <v-menu v-model="dateMenu" offset-y class="flex-grow-1">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
+                  Date
+                </v-btn>
+              </template>
+              <v-card>
+                <v-list>
+                  <v-list-item>
+                    <v-checkbox v-model="showAllDates" label="Show All Dates" @change="filterByDate" />
+                  </v-list-item>
+                  <v-list-item>
+                    <v-date-picker v-model="selectedDate" @input="filterByDate"></v-date-picker>
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+            <!-- Reset Button -->
+            <v-btn
+              small
+              @click="resetFilters"
+              color="grey lighten-2"
+              style="margin-left: 10px;"
+            >
+              Reset
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
+      </div>
+
     <v-simple-table class="aligned-table">
       <thead>
         <tr>
@@ -25,7 +146,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="job in sortedJobs" :key="job.id">
+        <tr v-for="job in filteredJobs" :key="job.id">
           <td>{{ job.job_name }}</td>
           <td>{{ job.job_category }}</td>
           <td>{{ job.salary }}</td>
@@ -43,6 +164,7 @@
         </tr>
       </tbody>
     </v-simple-table>
+    
   
       <!-- Edit Job Dialog -->
       <v-dialog v-model="dialog" max-width="600px">
@@ -126,6 +248,18 @@
         createDialog: false,
         deleteDialog: false,
         loading: false,
+
+        searchQuery: "", // New property for search input
+      selectedLocation: ['All'], // Selected location for filtering
+      locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak'], // Available locations
+      locationMenu: false, // State for location dropdown menu
+      selectedCategories: ['All'], // Selected categories for filtering
+      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+      categoryMenu: false,
+      dateMenu: false, // State for date dropdown menu
+      showAllDates: true, // New property to check if all dates are shown
+      selectedDate: null, // Selected date from date picker
+      
         editJobData: {},
         newJob: {
           job_name: '',
@@ -146,6 +280,42 @@
       
     },
     computed: {
+      filteredJobs() {
+      let filtered = this.jobs;
+
+      // Filter by search query
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        filtered = filtered.filter(job => job.job_name.toLowerCase().includes(query));
+      }
+
+      // Filter by selected locations
+      if (!this.selectedLocation.includes('All')) {
+        filtered = filtered.filter(job =>
+          this.selectedLocation.some(location =>
+            job.working_place.toLowerCase().includes(location.toLowerCase())
+          )
+        );
+      }
+
+      // Filter by selected categories
+      if (!this.selectedCategories.includes('All')) {
+        filtered = filtered.filter(job =>
+          this.selectedCategories.some(category => job.job_category === category)
+        );
+      }
+
+      // Filter by selected date
+      if (this.selectedDate && !this.showAllDates) {
+        const selectedDate = new Date(this.selectedDate).toISOString().split('T')[0]; // Format to YYYY-MM-DD
+        filtered = filtered.filter(job => {
+          const jobDate = new Date(job.created_at).toISOString().split('T')[0]; // Format to YYYY-MM-DD
+          return jobDate === selectedDate; // Compare dates
+        });
+      }
+
+      return filtered; // Return the filtered jobs
+    },
       sortedJobs() {
         return this.jobs.slice().sort((a, b) => {
           let modifier = this.sortDesc ? -1 : 1;
@@ -156,6 +326,95 @@
       },
     },
     methods: {
+      handleAllSelection(isChecked) {
+      if (isChecked) {
+        // If 'All' is checked, clear other selections
+        this.selectedLocation = ['All'];
+      } else {
+        // If 'All' is unchecked, remove it from selectedLocation
+        const index = this.selectedLocation.indexOf('All');
+        if (index > -1) {
+          this.selectedLocation.splice(index, 1);
+        }
+      }
+      this.locationMenu = true; // Keep dropdown open
+      this.filterLocation(); // Re-filter jobs based on updated selection
+    },
+
+    handleLocationSelection() {
+      // Check if any location is selected
+      if (this.selectedLocation.length > 1 && this.selectedLocation.includes('All')) {
+        // If 'All' is selected along with other locations, remove 'All'
+        const index = this.selectedLocation.indexOf('All');
+        if (index > -1) {
+          this.selectedLocation.splice(index, 1); // Deselect 'All'
+        }
+      }
+
+      this.locationMenu = true; // Keep dropdown open
+      this.filterLocation(); // Re-filter jobs based on updated selection
+    },
+    filterLocation() {
+      if (this.selectedLocation.includes('All')) {
+        this.filteredJobs = this.jobs; // Show all jobs if 'All' is selected
+      } else {
+        this.filteredJobs = this.jobs.filter(job =>
+          this.selectedLocation.some(location =>
+            job.working_place.toLowerCase().includes(location.toLowerCase())
+          )
+        );
+      }
+    },
+    handleAllCategorySelection(isChecked) {
+      if (isChecked) {
+        this.selectedCategories = ['All'];
+      } else {
+        const index = this.selectedCategories.indexOf('All');
+        if (index > -1) {
+          this.selectedCategories.splice(index, 1);
+        }
+      }
+    },
+    handleCategorySelection() {
+      if (this.selectedCategories.length > 1 && this.selectedCategories.includes('All')) {
+        const index = this.selectedCategories.indexOf('All');
+        if (index > -1) {
+          this.selectedCategories.splice(index, 1);
+        }
+      }
+    },
+    filterByDate() {
+      // Check if 'Show All Dates' is selected
+      if (this.showAllDates) {
+        // If all dates are to be shown, no filtering needed
+        this.filteredJobs = this.jobs; // Reset to all jobs
+        return;
+      }
+
+      // If a specific date is selected
+      if (this.selectedDate) {
+        // Format the selected date to YYYY-MM-DD
+        const selectedDate = new Date(this.selectedDate).toISOString().split('T')[0];
+
+        // Filter the jobs based on the selected date
+        this.filteredJobs = this.jobs.filter(job => {
+          const jobDate = new Date(job.created_at).toISOString().split('T')[0]; // Get job creation date in the same format
+          return jobDate === selectedDate; // Compare dates
+        });
+      } else {
+        // If no specific date is selected, reset the filtered jobs to all jobs
+        this.filteredJobs = this.jobs;
+      }
+    },
+    resetFilters() {
+        // Reset all filters to their default state
+        this.searchQuery = "";
+        this.selectedLocation = ['All'];
+        this.selectedCategories = ['All'];
+        this.showAllDates = true;
+        this.selectedDate = null;
+        this.filterJobs(); // Call the filtering method to refresh the job list
+      },
       fetchJobs() {
         const apiUrl = process.env.VUE_APP_API_URL;
         axios.get(`${apiUrl}/getjobs`, { withCredentials: true })
@@ -268,20 +527,21 @@
   };
   </script>
   
-  <style scoped>
+<style scoped>
 .manage-user-container {
   background-color: #f4f6f8; /* Light gray background */
-  padding: 20px;
+  padding: 10px 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   min-height: 100vh; /* Ensures the container covers the full screen height */
   display: flex;
   flex-direction: column;
   justify-content: space-between; /* Keeps the buttons at the bottom */
+  margin: 0; /* Ensures no outer margin */
 }
 
 .aligned-table {
-  margin-top: 20px;
+  margin-top: 10px;
   
 }
 
@@ -300,10 +560,10 @@
 .button-row {
   display: flex;
   justify-content: space-between;
-  position: absolute;
-  bottom: 20px;
   width: 100%;
-  padding: 0 20px;}
+  padding: 10px 20px; /* Adjust padding as needed */
+  margin-top: auto; /* Pushes the button row to the bottom */
+}
 
 .v-btn {
   transition: background-color 0.3s;
@@ -311,5 +571,10 @@
 
 .v-btn:hover {
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.v-container {
+  padding: 0; /* Remove padding */
+  margin: 0; /* Remove margin */
 }
 </style>
