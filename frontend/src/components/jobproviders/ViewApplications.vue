@@ -2,6 +2,11 @@
   <v-container>
     <h1>Applications for Your Jobs</h1>
 
+    <!-- Loading Spinner -->
+    <v-row v-if="loading" align="center" justify="center" class="pa-4">
+          <v-progress-circular indeterminate color="blue" size="70"></v-progress-circular>
+        </v-row>
+
     <v-data-table
       :headers="headers"
       :items="applications"
@@ -22,6 +27,16 @@
           <td>
             {{ item.status }}
             <v-icon @click="editStatus(item)">mdi-pencil</v-icon>
+          </td>
+          <td>
+            <!-- New Resume Status Column -->
+            <v-chip
+              :color="item.resume_pdf ? 'green' : 'red'"
+              dark
+              small
+            >
+              {{ item.resume_pdf ? 'Available' : 'Not Available' }}
+            </v-chip>
           </td>
           <td>
             <v-btn @click="viewResume(item.resume_pdf)" color="primary">
@@ -111,7 +126,10 @@ export default {
         { text: 'Job Category', value: 'job_category' },
         { text: 'Working Place', value: 'working_place' },
         { text: 'Status', value: 'status' },
-        { text: 'Actions', value: 'actions', sortable: false }
+        { text: 'Resume Status', value: 'resume_status', sortable: false }, // New Resume Status column
+        { text: 'Actions', value: 'actions', sortable: false },
+
+
       ],
       applications: [],
       noResumeDialog: false, // For handling the dialog
@@ -127,7 +145,9 @@ export default {
   },
   methods: {
     fetchApplications() {
+      this.loading = true; // Set loading to true at the start
       const apiUrl = process.env.VUE_APP_API_URL;
+      
       axios
         .get(`${apiUrl}/provider-applications`, {
           withCredentials: true,
@@ -137,6 +157,9 @@ export default {
         })
         .catch((error) => {
           console.error('Error fetching applications:', error);
+        })
+        .finally(() => {
+          this.loading = false; // Set loading to false once data is fetched
         });
     },
     goBack() {

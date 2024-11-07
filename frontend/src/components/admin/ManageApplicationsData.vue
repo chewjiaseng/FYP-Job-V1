@@ -2,6 +2,10 @@
   <v-container>
     <h1>All Applications</h1>
 
+  <!-- Loading Indicator -->
+  <v-progress-circular v-if="loading" indeterminate color="primary" class="ma-2"
+  ></v-progress-circular>
+
     <!-- Updated Simple Table -->
     <v-simple-table class="aligned-table">
       <thead>
@@ -13,6 +17,8 @@
           <th style="width: 12%">Applied At</th>
           <th style="width: 12%">Job Name</th>
           <th style="width: 15%">Status</th>
+          <th style="width: 12%">Resume Status</th>
+
           <th style="width: 15%">Actions</th> <!-- Added Actions column -->
         </tr>
       </thead>
@@ -25,6 +31,13 @@
           <td>{{ new Date(application.applied_at).toLocaleDateString() }}</td>
           <td>{{ application.job_name }}</td>
           <td>{{ application.status }}</td>
+          <td>
+            <!-- New Resume Status Column -->
+            <v-chip :color="application.resume_pdf ? 'green' : 'red'" dark small>
+              {{ application.resume_pdf ? 'Available' : 'Not Available' }}
+
+            </v-chip>
+          </td>
           <td>
             <v-btn @click="viewResume(application.resume_pdf)" color="primary" style="margin-top: 10px;">
           View Resume
@@ -136,6 +149,7 @@ export default {
   },
   methods: {
     fetchApplications() {
+      this.loading = true; // Start loading
       const apiUrl = process.env.VUE_APP_API_URL;
       axios
         .get(`${apiUrl}/all-applications`, { withCredentials: true })
@@ -146,6 +160,9 @@ export default {
           this.snackbarText = "Failed to load applications";
           this.snackbarType = "error";
           this.snackbar = true;
+        })
+        .finally(() => {
+          this.loading = false; // End loading
         });
     },
     viewResume(resumePdf) {

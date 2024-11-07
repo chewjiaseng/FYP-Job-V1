@@ -13,8 +13,7 @@ import AdminHome from '@/components/admin/AdminHome.vue'; // Import AdminHome
 import ManageUserData from '../components/admin/ManageUserData.vue';
 import ManageJobsData from '../components/admin/ManageJobsData.vue';
 import ManageApplicationsData from '../components/admin/ManageApplicationsData.vue';
-
-
+import CheckApplications from '@/components/jobseekers/CheckApplications.vue'; // Adjusted path and name
 
 Vue.use(Router);
 
@@ -100,7 +99,14 @@ const router = new Router({
       name: 'ManageApplicationsData',
       component: ManageApplicationsData,
       meta: { noMargin: true },
-    }
+    },
+    // Update the route for check applications
+    {
+      path: '/check-applications',
+      name: 'CheckApplications',
+      component: CheckApplications,
+      meta: { requiresAuth: true }
+    },
   ],
 });
 

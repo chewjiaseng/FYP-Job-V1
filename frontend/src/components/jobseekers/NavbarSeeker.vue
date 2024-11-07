@@ -13,6 +13,8 @@
         <v-col cols="auto" class="button-container d-none d-md-flex"> 
           <v-btn text class="custom-button" to="/seeker-home">Home</v-btn>
           <v-btn text class="custom-button" to="/job-recommendation">Job Recommendation</v-btn>
+          <v-btn text class="custom-button" to="/check-applications">Applications</v-btn> <!-- Updated Route -->
+
           <v-btn text class="custom-button logout-button" @click="logout">Logout</v-btn>
         </v-col>
 

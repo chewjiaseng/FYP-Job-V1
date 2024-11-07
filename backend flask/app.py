@@ -334,7 +334,8 @@ def login():
                 "message": "Login successful!",
                 "redirect": '/admin-home',
                 "username": user.username,
-                "role": user.role
+                "role": user.role,
+                "user_id": user.id  # Add user_id here
             }), 200
         
         # Decrypt the password for regular users
@@ -351,7 +352,8 @@ def login():
                     "message": "Login successful!",
                     "redirect": redirect_url,
                     "username": user.username,
-                    "role": user.role
+                    "role": user.role,
+                    "user_id": user.id  # Add user_id here
                 }), 200
             else:
                 app.logger.warning(f"Role mismatch for user: {identifier}")
@@ -871,6 +873,38 @@ def get_counts():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/checkcurrentapplications', methods=['GET'])
+@login_required
+def check_current_applications():
+    # Get the current user's ID
+    user_id = current_user.id
+    
+    # Query applications for the current user (filter by job_seeker_id)
+    applications = Application.query.filter(Application.job_seeker_id == user_id).all()
+    
+    # Create a list of applications, including the applicant's name
+    applications_list = []
+    for application in applications:
+        application_data = {
+            "job_id": application.job.id,
+            "job_name": application.job.job_name,  # Assuming you have a job related to the application
+            "name": application.name,  # Applicant's name
+            "identification_card": application.identification_card,
+            "gender": application.gender,
+            "hp_number": application.hp_number,
+            "applied_at": application.applied_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": application.status,
+            "resume_pdf": None,  # Placeholder for resume status
+        }
+        
+        # Encode resume PDF as base64 if it exists
+        if application.resume_pdf:
+            application_data["resume_pdf"] = base64.b64encode(application.resume_pdf).decode('utf-8')
+        
+        applications_list.append(application_data)
+    
+    return jsonify(applications_list)
   
 
 if __name__ == "__main__":

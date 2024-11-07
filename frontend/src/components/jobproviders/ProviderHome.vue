@@ -132,6 +132,7 @@
         </v-col>
       </v-row>
 
+      <v-progress-circular v-if="loading" indeterminate color="primary"></v-progress-circular>
 
       <!-- Jobs Table -->
       <v-data-table
@@ -171,7 +172,7 @@
       class="logout-button custom-logout-button"
       color="red darken-2"
       text
-      :loading="loading" :disabled="loading"
+      :loading="logoutLoading" :disabled="logoutLoading"
       rounded
       elevation="2"
       style="color: white !important;"
@@ -225,6 +226,7 @@ export default {
   data() {
     return {
       loading: false,
+      logoutLoading: false,
       username: "",
       userId: "",
       jobs: [],
@@ -402,16 +404,20 @@ export default {
         });
     },
     getProviderJobs() {
-      const apiUrl = process.env.VUE_APP_API_URL;
-      axios
-        .get(`${apiUrl}/provider-jobs`, { withCredentials: true })
-        .then((response) => {
-          this.jobs = response.data;
-        })
-        .catch((error) => {
-          console.error("Error fetching provider jobs:", error);
-        });
-    },
+    const apiUrl = process.env.VUE_APP_API_URL;
+    this.loading = true; // Start loading
+    axios
+      .get(`${apiUrl}/provider-jobs`, { withCredentials: true })
+      .then((response) => {
+        this.jobs = response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching provider jobs:", error);
+      })
+      .finally(() => {
+        this.loading = false; // Stop loading
+      });
+  },
     openEditDialog(job) {
       this.editedJob = { ...job };
       this.editDialog = true;
@@ -477,7 +483,7 @@ export default {
     },
     logout() {
       const apiUrl = process.env.VUE_APP_API_URL;
-      this.loading = true;
+      this.logoutLoading = true;
       axios
         .get(`${apiUrl}/logout`, { withCredentials: true })
         .then((response) => {
@@ -494,7 +500,7 @@ export default {
           alert("An error occurred. Please try again later.");
         }).finally(() => {
       // Reset loading state after the process is completed
-      this.loading = false;
+      this.logoutLoading = false;
     });
     },
   },
