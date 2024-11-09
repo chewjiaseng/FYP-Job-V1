@@ -21,6 +21,9 @@ import fitz
 import pytesseract
 from PIL import Image
 import io
+from datetime import datetime  # Ensure the import is at the top of your file
+import pytz  # Import pytz for handling time zones
+
 
 # Specify the path to the Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Adjust this if your installation is different
@@ -101,6 +104,13 @@ if not fernet_key:
 
 cipher_suite = Fernet(fernet_key.encode())
 
+malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
+logging.info(f"Malaysia time to be stored: {malaysia_time}")
+
+@app.before_request
+def set_malaysia_timezone():
+    pass
+
 # Define User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -143,7 +153,7 @@ class Job(db.Model):
     working_place = db.Column(db.String(100), nullable=False)
     working_hours = db.Column(db.String(50), nullable=False)
     job_description = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)  # Make sure to match your column type
+    created_at = db.Column(db.TIMESTAMP(timezone=True), server_default=db.func.current_timestamp(), nullable=False)  # Ensure time zone handling
     provider_name = db.Column(db.String(255), nullable=False)
 
 class Application(db.Model):
@@ -401,6 +411,10 @@ def create_job():
     job_provider_id = current_user.id
     provider_name = current_user.username  # Get the username of the current user
 
+    malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))  # Ensure it's in Malaysia time
+    db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+
+
     new_job = Job(
         job_name=job_name,
         job_provider_id=job_provider_id,
@@ -409,7 +423,9 @@ def create_job():
         salary=salary,
         working_place=working_place,
         working_hours=working_hours,
-        job_description=job_description
+        job_description=job_description,
+        created_at=malaysia_time  # Use Malaysia time instead of UTC
+
     )
 
     try:
@@ -477,12 +493,17 @@ def update_job(job_id):
     
     data = request.json
     
+    malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))  # Ensure it's in Malaysia time
+    db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+
     job.job_name = data.get('job_name', job.job_name)
     job.job_category = data.get('job_category', job.job_category)
     job.salary = data.get('salary', job.salary)
     job.working_place = data.get('working_place', job.working_place)
     job.working_hours = data.get('working_hours', job.working_hours)
     job.job_description = data.get('job_description', job.job_description)
+    job.created_at=malaysia_time  # Use Malaysia time instead of UTC
+
     
     try:
         db.session.commit()
@@ -562,6 +583,12 @@ def apply():
 
     if not all(data.values()):
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    # Set timezone for this session to Malaysia time
+    db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+
+    # Get current Malaysia time
+    malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
 
     # Create the application object with optional resume_pdf_content
     application = Application(
@@ -571,7 +598,9 @@ def apply():
         identification_card=data['identification_card'],
         gender=data['gender'],
         hp_number=data['hp_number'],
-        resume_pdf=resume_pdf_content  # Can be None if no PDF is uploaded
+        resume_pdf=resume_pdf_content,  # Can be None if no PDF is uploaded
+        applied_at=malaysia_time  # Set the Malaysia time when the application is made
+
     )
 
     try:
@@ -811,12 +840,18 @@ def update_application(application_id):
         return jsonify({'error': 'Application not found'}), 404
 
     try:
+        # Set timezone for this session to Malaysia time
+        db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+        
+        # Get current Malaysia time
+        malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
         # Update the application fields
         application.name = request.form.get('name', application.name)
         application.identification_card = request.form.get('identification_card', application.identification_card)
         application.gender = request.form.get('gender', application.gender)
         application.hp_number = request.form.get('hp_number', application.hp_number)
         application.status = request.form.get('status', application.status)
+        application.applied_at = malaysia_time  # Update `applied_at` with Malaysia time
 
         # Check for remove_resume flag
         if request.form.get('remove_resume') == 'true':
