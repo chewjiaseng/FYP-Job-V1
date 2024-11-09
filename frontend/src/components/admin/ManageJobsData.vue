@@ -99,7 +99,7 @@
               <v-card>
                 <v-list>
                   <v-list-item>
-                    <v-checkbox v-model="showAllDates" label="Show All Dates" @change="filterByDate" />
+                    <v-checkbox v-model="showAllDates" label="Show All Dates" @change="filterByDate" @click.stop/>
                   </v-list-item>
                   <v-list-item>
                     <v-date-picker v-model="selectedDate" @input="filterByDate"></v-date-picker>
@@ -251,10 +251,10 @@
 
         searchQuery: "", // New property for search input
       selectedLocation: ['All'], // Selected location for filtering
-      locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak'], // Available locations
+      locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
       locationMenu: false, // State for location dropdown menu
       selectedCategories: ['All'], // Selected categories for filtering
-      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
       categoryMenu: false,
       dateMenu: false, // State for date dropdown menu
       showAllDates: true, // New property to check if all dates are shown
@@ -577,4 +577,15 @@
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
 }
+.custom-category-btn {
+  background: linear-gradient(45deg, #ff4081, #ff80ab); /* Fancy gradient color */
+  color: white !important;
+  border-radius: 8px;
+  }
+
+.custom-date-btn {
+  background: linear-gradient(45deg, #ffd82c, #ffdf80); /* Fancy gradient color */
+  color: white !important;
+  border-radius: 8px;
+  }
 </style>

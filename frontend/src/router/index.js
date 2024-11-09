@@ -80,7 +80,8 @@ const router = new Router({
       path: '/view-applications',
       name: 'ViewApplications',
       component: () => import('@/components/jobproviders/ViewApplications.vue'),  // Create this component
-      meta: { requiresAuth: true }  // Protect the route with authentication
+      meta: { requiresAuth: true, noMargin: true }  // Protect the route with authentication
+      
     },
     {
       path: '/manage-user-data',

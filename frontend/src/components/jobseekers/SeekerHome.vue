@@ -190,10 +190,10 @@ export default {
       },
       selectedCategories: ['All'], // Selected categories for filtering
       allSelected: false, // Track if 'All' is selected
-      categories: [ 'Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+      categories: [ 'Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
       searchText: '', // Search text for job names
       selectedLocation: ['All'], // Selected location for filtering
-      locations: ['Johor', 'Selangor', 'Melaka','Kuala Lumpur','Pahang','Pulau Pinang','Kelantan','Kedah','Perlis','Perak'], // Available locations
+      locations: ['Johor', 'Selangor', 'Melaka','Kuala Lumpur','Pahang','Pulau Pinang','Kelantan','Kedah','Perlis','Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
       locationMenu: false, // State for location dropdown menu
       categoryMenu: false,
       categoryIcons: {
@@ -208,6 +208,8 @@ export default {
         'Customer Service': 'mdi-account-tie',     // Icon for Customer Service
         'Human Resources': 'mdi-account-group',     // Icon for Human Resources
         'Accountant': 'mdi-calculator',            // Icon for Accountant
+        'Transportation': 'mdi-motorbike',         // Icon for Transportation
+
         // Add more mappings as needed
       },
 
