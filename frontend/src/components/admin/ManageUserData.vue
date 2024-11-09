@@ -3,16 +3,31 @@
     <!-- User Table -->
     <v-simple-table class="aligned-table">
       <thead>
-        <tr>
-          <th style="width: 18%">Username</th>
-          <th style="width: 30%">Email</th>
-          <th style="width: 17%">Role</th>
-          <th style="width: 20%">Password</th>
-          <th style="width: 15%">Action</th>
-        </tr>
-      </thead>
+          <tr>
+            <th style="width: 18%">
+              Username
+              <v-icon small @click.stop="sortBy('username')">
+                {{ sortKey === 'username' ? (sortOrder === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down') : 'mdi-arrow-up-down' }}
+              </v-icon>
+            </th>
+            <th style="width: 30%">
+              Email
+              <v-icon small @click.stop="sortBy('email')">
+                {{ sortKey === 'email' ? (sortOrder === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down') : 'mdi-arrow-up-down' }}
+              </v-icon>
+            </th>
+            <th style="width: 17%">
+              Role
+              <v-icon small @click.stop="sortBy('role')">
+                {{ sortKey === 'role' ? (sortOrder === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down') : 'mdi-arrow-up-down' }}
+              </v-icon>
+            </th>
+            <th style="width: 20%">Password</th>
+            <th style="width: 15%">Action</th>
+          </tr>
+        </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.username">
+        <tr v-for="user in sortedUsers" :key="user.username">
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.role }}</td>
@@ -122,6 +137,8 @@ export default {
     return {
       loading: false,
       users: [],
+      sortKey: '', // Column to sort by
+      sortOrder: 'asc', // Sorting order, can be 'asc' or 'desc'
       dialog: false,
       deleteDialog: false,  // For delete confirmation
       deleteUserData: {},   // Holds the user to be deleted
@@ -142,7 +159,27 @@ export default {
       showPassword: false,
     };
   },
+  computed: {
+    sortedUsers() {
+      return this.users.slice().sort((a, b) => {
+        let modifier = this.sortOrder === 'asc' ? 1 : -1;
+        if (a[this.sortKey] < b[this.sortKey]) return -1 * modifier;
+        if (a[this.sortKey] > b[this.sortKey]) return 1 * modifier;
+        return 0;
+      });
+    },
+  },
   methods: {
+    sortBy(key) {
+      if (this.sortKey === key) {
+        // Toggle sort order if sorting the same column
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        // Set the sort key and default to ascending order
+        this.sortKey = key;
+        this.sortOrder = 'asc';
+      }
+    },
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },

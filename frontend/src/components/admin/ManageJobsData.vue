@@ -99,10 +99,10 @@
               <v-card>
                 <v-list>
                   <v-list-item>
-                    <v-checkbox v-model="showAllDates" label="Show All Dates" @change="filterByDate" @click.stop/>
+                    <v-checkbox v-model="showAllDates" label="Show All Dates"  @click.stop/>
                   </v-list-item>
                   <v-list-item>
-                    <v-date-picker v-model="selectedDate" @input="filterByDate"></v-date-picker>
+                    <v-date-picker v-model="selectedDate" @input="showAllDates = false"></v-date-picker>
                   </v-list-item>
                 </v-list>
               </v-card>
@@ -248,18 +248,16 @@
         createDialog: false,
         deleteDialog: false,
         loading: false,
-
         searchQuery: "", // New property for search input
-      selectedLocation: ['All'], // Selected location for filtering
-      locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
-      locationMenu: false, // State for location dropdown menu
-      selectedCategories: ['All'], // Selected categories for filtering
-      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
-      categoryMenu: false,
-      dateMenu: false, // State for date dropdown menu
-      showAllDates: true, // New property to check if all dates are shown
-      selectedDate: null, // Selected date from date picker
-      
+        selectedLocation: ['All'], // Selected location for filtering
+        locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
+        locationMenu: false, // State for location dropdown menu
+        selectedCategories: ['All'], // Selected categories for filtering
+        categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+        categoryMenu: false,
+        dateMenu: false, // State for date dropdown menu
+        showAllDates: true, // New property to check if all dates are shown
+        selectedDate: null, // Selected date from date picker
         editJobData: {},
         newJob: {
           job_name: '',
@@ -314,18 +312,20 @@
         });
       }
 
-      return filtered; // Return the filtered jobs
-    },
-      sortedJobs() {
-        return this.jobs.slice().sort((a, b) => {
-          let modifier = this.sortDesc ? -1 : 1;
-          if (a[this.sortBy] < b[this.sortBy]) return -1 * modifier;
-          if (a[this.sortBy] > b[this.sortBy]) return 1 * modifier;
-          return 0;
-        });
-      },
+      // Then apply sorting on the filtered jobs
+      return filtered.slice().sort((a, b) => {
+            let modifier = this.sortDesc ? -1 : 1;
+            if (a[this.sortBy] < b[this.sortBy]) return -1 * modifier;
+            if (a[this.sortBy] > b[this.sortBy]) return 1 * modifier;
+            return 0;
+          });    
+     },
     },
     methods: {
+      filterJobs() {
+        // Optionally trigger reactivity or perform any required filtering setup here.
+        // Since `filteredJobs` is computed, it will automatically react to changes.
+      },
       handleAllSelection(isChecked) {
       if (isChecked) {
         // If 'All' is checked, clear other selections
@@ -338,7 +338,6 @@
         }
       }
       this.locationMenu = true; // Keep dropdown open
-      this.filterLocation(); // Re-filter jobs based on updated selection
     },
 
     handleLocationSelection() {
@@ -352,19 +351,8 @@
       }
 
       this.locationMenu = true; // Keep dropdown open
-      this.filterLocation(); // Re-filter jobs based on updated selection
     },
-    filterLocation() {
-      if (this.selectedLocation.includes('All')) {
-        this.filteredJobs = this.jobs; // Show all jobs if 'All' is selected
-      } else {
-        this.filteredJobs = this.jobs.filter(job =>
-          this.selectedLocation.some(location =>
-            job.working_place.toLowerCase().includes(location.toLowerCase())
-          )
-        );
-      }
-    },
+   
     handleAllCategorySelection(isChecked) {
       if (isChecked) {
         this.selectedCategories = ['All'];
@@ -381,29 +369,6 @@
         if (index > -1) {
           this.selectedCategories.splice(index, 1);
         }
-      }
-    },
-    filterByDate() {
-      // Check if 'Show All Dates' is selected
-      if (this.showAllDates) {
-        // If all dates are to be shown, no filtering needed
-        this.filteredJobs = this.jobs; // Reset to all jobs
-        return;
-      }
-
-      // If a specific date is selected
-      if (this.selectedDate) {
-        // Format the selected date to YYYY-MM-DD
-        const selectedDate = new Date(this.selectedDate).toISOString().split('T')[0];
-
-        // Filter the jobs based on the selected date
-        this.filteredJobs = this.jobs.filter(job => {
-          const jobDate = new Date(job.created_at).toISOString().split('T')[0]; // Get job creation date in the same format
-          return jobDate === selectedDate; // Compare dates
-        });
-      } else {
-        // If no specific date is selected, reset the filtered jobs to all jobs
-        this.filteredJobs = this.jobs;
       }
     },
     resetFilters() {
@@ -441,85 +406,85 @@
         this.createDialog = true;
       },
       updateJob() {
-  this.loading = true;
-  const apiUrl = process.env.VUE_APP_API_URL;
-  console.log("Updating job with data:", this.editJobData); // Debugging
+      this.loading = true;
+      const apiUrl = process.env.VUE_APP_API_URL;
+      console.log("Updating job with data:", this.editJobData); // Debugging
 
-  axios.put(`${apiUrl}/update-job/${this.editJobData.id}`, this.editJobData, { withCredentials: true })
-    .then(() => {
-      this.snackbarText = 'Job updated successfully!';
-      this.snackbarType = 'success';
-      this.snackbar = true;
-      this.dialog = false;
-      this.fetchJobs();
-    })
-    .catch(error => {
-      this.snackbarText = 'Failed to update job.';
-      this.snackbarType = 'error';
-      this.snackbar = true;
-      console.error('Error updating job:', error);
-    })
-    .finally(() => {
-      this.loading = false;
-    });
-},
-      createJob() {
-  this.loading = true;
+      axios.put(`${apiUrl}/update-job/${this.editJobData.id}`, this.editJobData, { withCredentials: true })
+        .then(() => {
+          this.snackbarText = 'Job updated successfully!';
+          this.snackbarType = 'success';
+          this.snackbar = true;
+          this.dialog = false;
+          this.fetchJobs();
+        })
+        .catch(error => {
+          this.snackbarText = 'Failed to update job.';
+          this.snackbarType = 'error';
+          this.snackbar = true;
+          console.error('Error updating job:', error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    createJob() {
+      this.loading = true;
 
-  // Check if any required fields are empty
-  if (!this.newJob.job_name || !this.newJob.job_category || !this.newJob.salary || 
-      !this.newJob.working_place || !this.newJob.working_hours || !this.newJob.job_description) {
-    this.loading = false; // Reset loading state
-    alert('Please fill in the information!'); // Display alert
-    return; // Prevent further execution
-  }
+      // Check if any required fields are empty
+      if (!this.newJob.job_name || !this.newJob.job_category || !this.newJob.salary || 
+          !this.newJob.working_place || !this.newJob.working_hours || !this.newJob.job_description) {
+        this.loading = false; // Reset loading state
+        alert('Please fill in the information!'); // Display alert
+        return; // Prevent further execution
+      }
 
-  const apiUrl = process.env.VUE_APP_API_URL;
-  axios.post(`${apiUrl}/create-job`, this.newJob, { withCredentials: true })
-    .then(() => {
-      this.snackbarText = 'Job created successfully!';
-      this.snackbarType = 'success';
-      this.snackbar = true;
-      this.createDialog = false;
-      this.fetchJobs();
-    })
-    .catch(error => {
-      this.snackbarText = 'Failed to create job.';
-      this.snackbarType = 'error';
-      this.snackbar = true;
-      console.error('Error creating job:', error);
-    })
-    .finally(() => {
-      this.loading = false;
-    });
-},
+      const apiUrl = process.env.VUE_APP_API_URL;
+      axios.post(`${apiUrl}/create-job`, this.newJob, { withCredentials: true })
+        .then(() => {
+          this.snackbarText = 'Job created successfully!';
+          this.snackbarType = 'success';
+          this.snackbar = true;
+          this.createDialog = false;
+          this.fetchJobs();
+        })
+        .catch(error => {
+          this.snackbarText = 'Failed to create job.';
+          this.snackbarType = 'error';
+          this.snackbar = true;
+          console.error('Error creating job:', error);
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
       confirmDelete(jobId) {
         this.deleteJobId = jobId;
         this.deleteDialog = true;
       },
       deleteJob() {
-  this.loading = true;
-  const apiUrl = process.env.VUE_APP_API_URL;
-  console.log("Deleting job with ID:", this.deleteJobId); // Debugging
+        this.loading = true;
+        const apiUrl = process.env.VUE_APP_API_URL;
+        console.log("Deleting job with ID:", this.deleteJobId); // Debugging
 
-  axios.delete(`${apiUrl}/delete-job/${this.deleteJobId}`, { withCredentials: true })
-    .then(() => {
-      this.snackbarText = 'Job deleted successfully!';
-      this.snackbarType = 'success';
-      this.snackbar = true;
-      this.deleteDialog = false;
-      this.fetchJobs();
-    })
-    .catch(error => {
-      this.snackbarText = 'Failed to delete job.';
-      this.snackbarType = 'error';
-      this.snackbar = true;
-      console.error('Error deleting job:', error);
-    })
-    .finally(() => {
-      this.loading = false;
-    });
-},
+        axios.delete(`${apiUrl}/delete-job/${this.deleteJobId}`, { withCredentials: true })
+          .then(() => {
+            this.snackbarText = 'Job deleted successfully!';
+            this.snackbarType = 'success';
+            this.snackbar = true;
+            this.deleteDialog = false;
+            this.fetchJobs();
+          })
+          .catch(error => {
+            this.snackbarText = 'Failed to delete job.';
+            this.snackbarType = 'error';
+            this.snackbar = true;
+            console.error('Error deleting job:', error);
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      },
       goBack() {
         this.$router.go(-1);
       }

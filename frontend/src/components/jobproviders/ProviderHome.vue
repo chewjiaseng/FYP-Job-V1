@@ -111,10 +111,10 @@
               <v-card>
                 <v-list>
                   <v-list-item>
-                    <v-checkbox v-model="showAllDates" label="Show All Dates" @change="filterByDate" @click.stop/>
+                    <v-checkbox v-model="showAllDates" label="Show All Dates"  @click.stop/>
                   </v-list-item>
                   <v-list-item>
-                    <v-date-picker v-model="selectedDate" @input="filterByDate"></v-date-picker>
+                    <v-date-picker v-model="selectedDate" @input="showAllDates = false"></v-date-picker>
                   </v-list-item>
                 </v-list>
               </v-card>
@@ -301,6 +301,10 @@ export default {
     this.getProviderJobs();
   },
   methods: {
+    filterJobs() {
+    // Optionally trigger reactivity or perform any required filtering setup here.
+    // Since `filteredJobs` is computed, it will automatically react to changes.
+  },
     handleAllSelection(isChecked) {
       if (isChecked) {
         // If 'All' is checked, clear other selections
@@ -313,7 +317,6 @@ export default {
         }
       }
       this.locationMenu = true; // Keep dropdown open
-      this.filterLocation(); // Re-filter jobs based on updated selection
     },
 
     handleLocationSelection() {
@@ -327,19 +330,8 @@ export default {
       }
 
       this.locationMenu = true; // Keep dropdown open
-      this.filterLocation(); // Re-filter jobs based on updated selection
     },
-    filterLocation() {
-      if (this.selectedLocation.includes('All')) {
-        this.filteredJobs = this.jobs; // Show all jobs if 'All' is selected
-      } else {
-        this.filteredJobs = this.jobs.filter(job =>
-          this.selectedLocation.some(location =>
-            job.working_place.toLowerCase().includes(location.toLowerCase())
-          )
-        );
-      }
-    },
+    
     handleAllCategorySelection(isChecked) {
       if (isChecked) {
         this.selectedCategories = ['All'];
@@ -356,29 +348,6 @@ export default {
         if (index > -1) {
           this.selectedCategories.splice(index, 1);
         }
-      }
-    },
-    filterByDate() {
-      // Check if 'Show All Dates' is selected
-      if (this.showAllDates) {
-        // If all dates are to be shown, no filtering needed
-        this.filteredJobs = this.jobs; // Reset to all jobs
-        return;
-      }
-
-      // If a specific date is selected
-      if (this.selectedDate) {
-        // Format the selected date to YYYY-MM-DD
-        const selectedDate = new Date(this.selectedDate).toISOString().split('T')[0];
-
-        // Filter the jobs based on the selected date
-        this.filteredJobs = this.jobs.filter(job => {
-          const jobDate = new Date(job.created_at).toISOString().split('T')[0]; // Get job creation date in the same format
-          return jobDate === selectedDate; // Compare dates
-        });
-      } else {
-        // If no specific date is selected, reset the filtered jobs to all jobs
-        this.filteredJobs = this.jobs;
       }
     },
     resetFilters() {

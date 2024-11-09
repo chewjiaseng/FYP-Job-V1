@@ -133,6 +133,8 @@
           <th style="width: 15%">Phone</th>
           <th style="width: 12%">Applied At</th>
           <th style="width: 12%">Job Name</th>
+          <th style="width: 12%">Category</th>
+
           <th style="width: 15%">Status</th>
           <th style="width: 12%">Resume Status</th>
 
@@ -147,6 +149,7 @@
           <td>{{ application.hp_number }}</td>
           <td>{{ new Date(application.applied_at).toLocaleDateString() }}</td>
           <td>{{ application.job_name }}</td>
+          <td>{{ application.job_category }}</td>
           <td>{{ application.status }}</td>
           <td>
             <!-- New Resume Status Column -->
