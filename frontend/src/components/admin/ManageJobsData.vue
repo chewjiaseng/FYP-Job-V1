@@ -139,6 +139,12 @@
           <th @click="sortTable('working_hours')" style="color: white;">Working Hours
             <v-icon>{{ sortBy === 'working_hours' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
           </th>
+          <th @click="sortTable('phone_num')" style="color: white;">Phone Number
+            <v-icon>{{ sortBy === 'phone_num' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
+          <th @click="sortTable('provider_name')" style="color: white;">Provider Name
+            <v-icon>{{ sortBy === 'provider_name' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
+          </th>
           <th @click="sortTable('created_at')" style="color: white;">Created At
             <v-icon>{{ sortBy === 'created_at' && sortDesc ? 'mdi-arrow-down' : 'mdi-arrow-up' }}</v-icon>
           </th>
@@ -152,6 +158,8 @@
           <td>{{ job.salary }}</td>
           <td>{{ job.working_place }}</td>
           <td>{{ job.working_hours }}</td>
+          <td>{{ job.phone_num }}</td> <!-- New column for phone number -->
+          <td>{{ job.provider_name }}</td> <!-- New column for provider name -->
           <td>{{ new Date(job.created_at).toLocaleDateString() }}</td>
           <td>
             <v-btn icon small @click="openEditDialog(job)">
@@ -177,6 +185,7 @@
               <v-text-field v-model="editJobData.salary" label="Salary"></v-text-field>
               <v-text-field v-model="editJobData.working_place" label="Working Place"></v-text-field>
               <v-text-field v-model="editJobData.working_hours" label="Working Hours"></v-text-field>
+              <v-text-field v-model="editJobData.phone_num" label="Phone Number"></v-text-field>
               <v-textarea v-model="editJobData.job_description" label="Job Description"></v-textarea>
             </v-form>
           </v-card-text>
@@ -198,6 +207,7 @@
               <v-text-field v-model="newJob.salary" label="Salary"></v-text-field>
               <v-text-field v-model="newJob.working_place" label="Working Place"></v-text-field>
               <v-text-field v-model="newJob.working_hours" label="Working Hours"></v-text-field>
+              <v-text-field v-model="newJob.phone_num" label="Phone Number"></v-text-field>
               <v-textarea v-model="newJob.job_description" label="Job Description"></v-textarea>
             </v-form>
           </v-card-text>

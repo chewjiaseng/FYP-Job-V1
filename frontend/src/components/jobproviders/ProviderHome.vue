@@ -150,6 +150,7 @@
             <td>{{ item.working_place }}</td>
             <td>{{ item.working_hours }}</td>
             <td>{{ item.job_description }}</td>
+            <td>{{ item.phone_num }}</td>  <!-- New phone_num field -->
             <td>{{ new Date(item.created_at).toLocaleDateString() }}</td>
             <td>
               <!-- Edit Icon Button -->
@@ -192,6 +193,7 @@
             <v-text-field v-model="editedJob.working_place" label="Working Place" outlined></v-text-field>
             <v-text-field v-model="editedJob.working_hours" label="Working Hours" outlined></v-text-field>
             <v-textarea v-model="editedJob.job_description" label="Job Description" rows="2" outlined></v-textarea>
+            <v-text-field v-model="editedJob.phone_num" label="Phone Number" outlined></v-text-field>  <!-- New phone_num field -->
           </v-form>
         </v-card-text>
         <v-card-actions>
@@ -247,6 +249,7 @@ export default {
         { text: "Place", value: "working_place", width: "200px" },
         { text: "Hours", value: "working_hours", width: "150px" },
         { text: "Description", value: "job_description", width: "250px" },
+        { text: "Phone Number", value: "phone_num", width: "150px" },  // New phone_num column
         { text: "Created At", value: "created_at", width: "150px" },
         { text: "Actions", value: "actions", sortable: false, width: "150px" }
       ],

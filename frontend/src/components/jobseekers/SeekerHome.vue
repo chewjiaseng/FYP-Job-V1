@@ -119,6 +119,7 @@
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleString() }}</p>
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Contact:</strong> {{ job.phone_num }}</p> <!-- Add Contact here -->
               <v-btn text class="expand-btn" @click="toggleExpand(job.id)">
                 {{ isExpanded(job.id) ? 'Show Less' : 'Show More' }}
               </v-btn>

@@ -68,6 +68,7 @@
                 <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
                 <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleString() }}</p>
                 <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
+                <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Contact:</strong> {{ job.phone_num }}</p>
                 <v-btn
                   text
                   @click="toggleExpand(job.id)"
@@ -208,43 +209,43 @@ export default {
         console.log("Jobs response:", response.data); // Log the response data
 
         // Check if the backend detected that the file is not a valid resume
-    if (response.data.message === "The uploaded file does not appear to be a valid resume.") {
-      this.message = response.data.message;  // Display the error message from the backend
-      this.predictedCategory = '';  // Clear category and job recommendations
-      this.recommendedJob = '';
-      this.jobs = [];
-    } else {
-      // Set the predicted category and recommended job if valid resume
-      this.predictedCategory = response.data.predicted_category;
-      this.recommendedJob = response.data.recommended_job;
+        if (response.data.message === "The uploaded file does not appear to be a valid resume.") {
+          this.message = response.data.message;  // Display the error message from the backend
+          this.predictedCategory = '';  // Clear category and job recommendations
+          this.recommendedJob = '';
+          this.jobs = [];
+        } else {
+          // Set the predicted category and recommended job if valid resume
+          this.predictedCategory = response.data.predicted_category;
+          this.recommendedJob = response.data.recommended_job;
 
-      // Check if jobs are found
-      if (response.data.jobs && response.data.jobs.length) {
-        this.jobs = response.data.jobs;
-        this.message = '';  // Clear any previous messages
-      } else {
-        this.jobs = [];  // Clear the jobs list if no jobs are found
-        this.message = response.data.message || "No jobs found.";
+          // Check if jobs are found
+          if (response.data.jobs && response.data.jobs.length) {
+            this.jobs = response.data.jobs;
+            this.message = '';  // Clear any previous messages
+          } else {
+            this.jobs = [];  // Clear the jobs list if no jobs are found
+            this.message = response.data.message || "No jobs found.";
+          }
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 400) {
+          this.message = error.response.data.message;  // Display the backend error message
+          // Clear category and job recommendations on error
+          this.predictedCategory = '';  
+          this.recommendedJob = '';
+          this.jobs = [];
+        } else {
+          this.message = "Error fetching jobs.";
+          // Clear category and job recommendations on error
+          this.predictedCategory = '';  
+          this.recommendedJob = '';
+          this.jobs = [];
+        }
+      } finally {
+        this.loading = false; // Reset loading at the end
       }
-    }
-  } catch (error) {
-    if (error.response && error.response.status === 400) {
-      this.message = error.response.data.message;  // Display the backend error message
-      // Clear category and job recommendations on error
-      this.predictedCategory = '';  
-      this.recommendedJob = '';
-      this.jobs = [];
-    } else {
-      this.message = "Error fetching jobs.";
-      // Clear category and job recommendations on error
-      this.predictedCategory = '';  
-      this.recommendedJob = '';
-      this.jobs = [];
-    }
-  } finally {
-    this.loading = false; // Reset loading at the end
-  }
-},
+    },
     async fetchJobsByCategory(category) {
       try {
         const response = await axios.get(`/jobs?category=${category}`, { withCredentials: true });

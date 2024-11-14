@@ -8,48 +8,13 @@
           </v-card-title>
           <v-card-text>
             <v-form @submit.prevent="createJob">
-              <v-text-field
-                v-model="job_name"
-                label="Job Name"
-                required
-                outlined
-                class="compact-text-field"
-              ></v-text-field>
-              <v-text-field
-                v-model="job_category"
-                label="Job Category"
-                required
-                outlined
-                class="compact-text-field"
-              ></v-text-field>
-              <v-text-field
-                v-model="salary"
-                label="Salary"
-                required
-                outlined
-                class="compact-text-field"
-              ></v-text-field>
-              <v-text-field
-                v-model="working_place"
-                label="Working Place"
-                required
-                outlined
-                class="compact-text-field"
-              ></v-text-field>
-              <v-text-field
-                v-model="working_hours"
-                label="Working Hours"
-                required
-                outlined
-                class="compact-text-field"
-              ></v-text-field>
-              <v-textarea
-                v-model="job_description"
-                label="Job Description"
-                required
-                outlined
-                class="compact-text-area"
-              ></v-textarea>
+              <v-text-field v-model="job_name" label="Job Name" required outlined class="compact-text-field"></v-text-field>
+              <v-text-field v-model="job_category" label="Job Category" required outlined class="compact-text-field"></v-text-field>
+              <v-text-field v-model="salary" label="Salary" required outlined class="compact-text-field"></v-text-field>
+              <v-text-field v-model="working_place" label="Working Place" required outlined class="compact-text-field"></v-text-field>
+              <v-text-field v-model="working_hours" label="Working Hours" required outlined class="compact-text-field"></v-text-field>
+              <v-text-field v-model="phone_num" label="Phone Number" required outlined class="compact-text-field"></v-text-field> <!-- New phone_num field -->
+              <v-textarea v-model="job_description" label="Job Description" required outlined class="compact-text-area"></v-textarea>
               
               <!-- Display User ID -->
               <v-chip class="ma-2 user-id-chip">
@@ -81,6 +46,7 @@ export default {
       working_place: '',
       working_hours: '',
       job_description: '',
+      phone_num: '',  // New phone number field
       userId: sessionStorage.getItem('userId') || '',  // Retrieve the user ID from sessionStorage
     };
   },
@@ -103,6 +69,7 @@ export default {
       working_place: this.working_place,
       working_hours: this.working_hours,
       job_description: this.job_description,
+      phone_num: this.phone_num,  // Include phone number in job data
       user_id: this.userId,  // Include user ID in the job data
     };
 

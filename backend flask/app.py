@@ -155,6 +155,7 @@ class Job(db.Model):
     job_description = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.TIMESTAMP(timezone=True), server_default=db.func.current_timestamp(), nullable=False)  # Ensure time zone handling
     provider_name = db.Column(db.String(255), nullable=False)
+    phone_num = db.Column(db.String(255), nullable=False)  # New phone_num column
 
 class Application(db.Model):
     __tablename__ = 'applications'
@@ -404,6 +405,7 @@ def create_job():
     working_place = data.get('working_place')
     working_hours = data.get('working_hours')
     job_description = data.get('job_description')
+    phone_num = data.get('phone_num')  # New phone number field
 
     if not all([job_name, job_category, salary, working_place, working_hours, job_description]):
         return jsonify({"error": "Missing fields in request data"}), 400
@@ -424,6 +426,7 @@ def create_job():
         working_place=working_place,
         working_hours=working_hours,
         job_description=job_description,
+        phone_num=phone_num,  # Set phone number in new job instance
         created_at=malaysia_time  # Use Malaysia time instead of UTC
 
     )
@@ -451,7 +454,8 @@ def provider_jobs():
         'working_place': job.working_place,
         'working_hours': job.working_hours,
         'job_description': job.job_description,
-        'created_at': job.created_at
+        'created_at': job.created_at,
+        'phone_num': job.phone_num  # Include the new phone_num field
     } for job in jobs]
     
     return jsonify(jobs_list), 200
@@ -502,6 +506,7 @@ def update_job(job_id):
     job.working_place = data.get('working_place', job.working_place)
     job.working_hours = data.get('working_hours', job.working_hours)
     job.job_description = data.get('job_description', job.job_description)
+    job.phone_num = data.get('phone_num', job.phone_num)
     job.created_at=malaysia_time  # Use Malaysia time instead of UTC
 
     
@@ -548,9 +553,11 @@ def get_all_jobs():
         'salary': job.salary,
         'working_place': job.working_place,
         'working_hours': job.working_hours,
+        'phone_num': job.phone_num,  # Add phone number here
         'job_description': job.job_description,
         'created_at': job.created_at,
-        'provider_name': job.provider_name
+        'provider_name': job.provider_name,
+        'phone_num': job.phone_num
     } for job in jobs]
     
     return jsonify(jobs_list), 200
@@ -666,7 +673,8 @@ def fetch_jobs():
         'working_hours': job.working_hours,
         'job_description': job.job_description,
         'created_at': job.created_at,
-        'provider_name': job.provider_name
+        'provider_name': job.provider_name,
+        'phone_num': job.phone_num
     } for job in jobs]
     
     # Return the predicted category and recommended job, even if no jobs are found
