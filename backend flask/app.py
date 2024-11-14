@@ -87,7 +87,7 @@ login_manager.init_app(app)
 login_manager.login_view = '/login'  # Redirect to login if not authenticated
 
 # Database connection external URI
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://databasefyp_user:z6IaLrWYF1nKPdnuo81xDu1QtFx0brv0@dpg-cs798ot6l47c73941c50-a.oregon-postgres.render.com/databasefyp'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://newdatabase2_user:PC6gKTbwZyCK6e7g64EQ3alkLned9lIo@dpg-csqmuitumphs73d4rjcg-a.oregon-postgres.render.com/newdatabase2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
