@@ -104,8 +104,10 @@
           </v-col>
         </v-row>
 
+      <v-progress-circular v-if="loading" indeterminate color="primary" class="ma-2"></v-progress-circular>
+  
       <!-- Jobs listing -->
-      <v-row>
+      <v-row v-if="!loading">
         <v-col v-for="job in filteredJobs" :key="job.id" cols="12" sm="6" md="4">
           <v-card class="job-card">
             <v-card-title class="job-title">
@@ -222,6 +224,7 @@ export default {
   },
   methods: {
     fetchJobs() {
+      this.loading = true; // Start loading
       const apiUrl = process.env.VUE_APP_API_URL;
       fetch(`${apiUrl}/getjobs`, {
         credentials: 'include',
@@ -230,9 +233,13 @@ export default {
         .then(data => {
           this.jobs = data;
           this.filteredJobs = data; // Set default filtered jobs
+          this.loading = false; // Stop loading after data is set
+
         })
         .catch(error => {
           console.error('Error fetching jobs:', error);
+          this.loading = false; // Stop loading even if there's an error
+
         });
     },
     clearSearch() {
