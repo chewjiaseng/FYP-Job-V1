@@ -1,6 +1,6 @@
 <template>
   <v-app-bar app class="custom-navbar">
-    <v-container>
+    <v-container class="pa-0">
       <v-row no-gutters align="center">
         <v-col cols="auto">
           <v-toolbar-title class="custom-title">
@@ -69,6 +69,8 @@ export default {
 <style scoped>
 .custom-navbar {
   background-color: #201a94 !important;
+  margin: 0;
+  padding: 0;
 }
 
 .custom-title {

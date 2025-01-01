@@ -2,7 +2,7 @@
   <div>
     <NavbarSeeker :username="username" />
 
-    <v-container class="seeker-home">
+    <v-container class="seeker-home" fluid>
       <v-row>
         <v-col>
           <h1>Welcome {{ username }}</h1>
@@ -129,6 +129,12 @@
             </v-card-text>
           </v-card>
         </v-col>
+        <!-- Display message if no jobs match the criteria -->
+        <v-col v-if="filteredJobs.length === 0" cols="12">
+          <div class="text-center">
+            <v-btn disabled class="grey lighten-2">Sorry, no jobs found matching your criteria</v-btn>
+          </div>
+        </v-col>
       </v-row>
 
     </v-container>
@@ -160,7 +166,6 @@
     </v-snackbar>
   </div>
 </template>
-
 
 <script>
 import NavbarSeeker from './NavbarSeeker.vue';
@@ -424,11 +429,47 @@ export default {
 </script>
 
 <style scoped>
+
 .seeker-home {
   text-align: center;
-  margin-top: 20px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fff1eb, #ace0f9);
+}
+.seeker-home::before,
+.seeker-home::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: rgba(255, 87, 34, 0.4);
+  border-radius: 50%;
+  animation: float 10s infinite ease-in-out;
 }
 
+.seeker-home::before {
+  top: -50px;
+  left: -50px;
+}
+
+.seeker-home::after {
+  bottom: -50px;
+  right: -50px;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
 .seeker-home h1 {
   font-family: 'Arial', sans-serif;
   color: #4CAF50;

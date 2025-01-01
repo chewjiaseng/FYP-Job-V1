@@ -55,7 +55,7 @@
         <v-card-title class="dialog-title">Edit User</v-card-title>
         <v-card-text>
           <v-form>
-            <v-text-field v-model="editUserData.username" label="Username"></v-text-field>
+            <v-text-field v-model="editUserData.username" label="Username" :readonly="true" class="readonly-field"></v-text-field>
             <v-text-field v-model="editUserData.email" label="Email"></v-text-field>
 
             <v-text-field

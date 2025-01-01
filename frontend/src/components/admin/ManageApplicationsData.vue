@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <h1>All Applications</h1>
 
   <!-- Loading Indicator -->
