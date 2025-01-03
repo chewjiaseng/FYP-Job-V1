@@ -160,7 +160,7 @@
           <td>{{ job.working_hours }}</td>
           <td>{{ job.phone_num }}</td> <!-- New column for phone number -->
           <td>{{ job.provider_name }}</td> <!-- New column for provider name -->
-          <td>{{ new Date(job.created_at).toLocaleDateString() }}</td>
+          <td>{{ new Date(job.created_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</td>
           <td>
             <v-btn icon small @click="openEditDialog(job)">
               <v-icon color="blue">mdi-pencil</v-icon>
@@ -173,7 +173,8 @@
       </tbody>
     </v-simple-table>
     
-  
+    <v-progress-circular v-if="loading" indeterminate color="primary" class="mx-auto" size="50"></v-progress-circular>
+
       <!-- Edit Job Dialog -->
       <v-dialog v-model="dialog" max-width="600px">
         <v-card>
@@ -391,13 +392,18 @@
         this.filterJobs(); // Call the filtering method to refresh the job list
       },
       fetchJobs() {
+        this.loading = true;  // Start loading
         const apiUrl = process.env.VUE_APP_API_URL;
         axios.get(`${apiUrl}/getjobs`, { withCredentials: true })
           .then(response => {
             this.jobs = response.data;
+            this.loading = false; // Stop loading after data is fetched
+
           })
           .catch(error => {
             console.error('Error fetching jobs:', error);
+            this.loading = false; // Stop loading after data is fetched
+
           });
       },
       sortTable(field) {

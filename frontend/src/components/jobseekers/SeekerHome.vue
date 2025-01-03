@@ -108,8 +108,8 @@
   
       <!-- Jobs listing -->
       <v-row v-if="!loading">
-        <v-col v-for="job in filteredJobs" :key="job.id" cols="12" sm="6" md="4">
-          <v-card class="job-card">
+        <v-col v-for="job in filteredJobs" :key="job.id" cols="12" sm="6" md="4" class="job-col">
+          <v-card class="job-card" compact-card>
             <v-card-title class="job-title">
               <v-icon class="mr-2">{{ categoryIcons[job.job_category] || 'mdi-briefcase' }}</v-icon>
               {{ job.job_name }}
@@ -119,7 +119,7 @@
               <p class="job-detail left-align"><strong>Place:</strong> {{ job.working_place }}</p>
               <p class="job-detail left-align"><strong>Hours:</strong> {{ job.working_hours }}</p>
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
-              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleString() }}</p>
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</p> 
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Contact:</strong> {{ job.phone_num }}</p> <!-- Add Contact here -->
               <v-btn text class="expand-btn" @click="toggleExpand(job.id)">
@@ -502,6 +502,11 @@ v-card {
   opacity: 0.8; /* Slight opacity on hover */
 }
 
+.job-col {
+  padding: 28px; /* Add space between columns */
+}
+
+
 .job-card {
   background: linear-gradient(135deg, #f7f8fa, #ffe37d); /* Light gradient background */
   border-radius: 12px; /* Rounded corners */
@@ -516,20 +521,25 @@ v-card {
 }
 
 .job-title {
-  font-size: 1.2em; /* Increase font size */
+  font-size: 1.3em; /* Increase font size */
   font-weight: bold;
   color: #3f51b5; /* Primary color for the job title */
 }
 
 .job-category {
   color: #757575; /* Grey color for the category */
-  font-size: 0.9em;
+  font-size: 1.1em;
+  font-weight: bold;
 }
 
 .job-detail {
   color: #555; /* Darker text for details */
-  font-size: 0.9em;
-  margin-bottom: 5px;
+  font-size: 1.0em;
+  margin-bottom: 15px;
+}
+
+.job-detail:last-child {
+  margin-bottom: 0; /* Remove margin on the last paragraph */
 }
 
 .expand-btn {

@@ -1,24 +1,27 @@
 <template>
-  <v-container>
+  <v-container class="background-container" fluid>
     <!-- Include the NavbarSeeker component -->
     <NavbarSeeker />
     <h1>Your Job Applications</h1>
 
+    <div class="table-wrapper">
     <!-- Loading Indicator -->
     <v-progress-circular v-if="loading" indeterminate color="primary" class="ma-2"></v-progress-circular>
 
     <!-- Simple Table for Applications -->
+    <v-card class="elevation-3">
     <v-simple-table class="aligned-table">
       <thead>
         <tr>
-          <th style="width: 18%">Applicant Name</th>
+          <th style="width: 15%">Applicant Name</th>
           <th style="width: 15%">ID Card</th>
           <th style="width: 10%">Gender</th>
           <th style="width: 15%">Phone</th>
           <th style="width: 12%">Applied At</th>
-          <th style="width: 12%">Job Name</th>
-          <th style="width: 15%">Status</th>
+          <th style="width: 18%">Job Name</th>
+          <th style="width: 12%">Status</th>
           <th style="width: 12%">Resume Status</th>
+          <th style="width: 12%">Actions</th> 
         </tr>
       </thead>
       <tbody>
@@ -30,8 +33,8 @@
           <td>{{ new Date(application.applied_at).toLocaleDateString() }}</td>
           <td>{{ application.job_name }}</td>
           <td :style="{ fontWeight: 'bold' }">
-  {{ application.status }}
-</td>
+            {{ application.status }}
+          </td>
           <td>
             <!-- New Resume Status Column -->
             <v-chip :color="application.resume_pdf ? 'green' : 'red'" dark small>
@@ -39,13 +42,15 @@
             </v-chip>
           </td>
           <td>
-            <v-btn @click="viewResume(application.resume_pdf)" color="primary" style="margin-top: 10px;">
+            <v-btn @click="viewResume(application.resume_pdf)" color="primary" small >
               View Resume
             </v-btn>
           </td>
         </tr>
       </tbody>
     </v-simple-table>
+  </v-card>
+</div>
     
     <div v-if="applications.length === 0">
       <p>No applications found for you.</p>
@@ -137,7 +142,73 @@ export default {
 <style scoped>
 h1 {
   color: #201a94;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.8rem;
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: bold;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
+
+.background-container {
+  background: linear-gradient(135deg, #c8ffc0, #ffffff);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+
+.table-wrapper {
+  width: 95%;
+  max-width: 1400px;
+  margin-top: 15px;
+}
+
+.v-card {
+  padding: 20px;
+  border-radius: 10px;
+  background: rgb(210, 251, 255) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Soft shadow */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.v-card:hover {
+  transform: scale(1.02); /* Slight zoom effect */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.aligned-table {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+th {
+  background: #ecae12;
+  color: white !important;
+  padding: 12px;
+  font-size: 1rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.2);
+}
+
+th, td {
+  text-align: center !important;
+  padding: 10px;
+}
+
+td {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+td:hover {
+  background: rgba(220, 220, 250, 0.5); /* Soft highlight effect */
+  transition: background 0.3s ease-in-out;
+}
+
+
 </style>

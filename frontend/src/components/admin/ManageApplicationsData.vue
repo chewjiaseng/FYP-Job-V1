@@ -147,7 +147,7 @@
           <td>{{ application.identification_card }}</td>
           <td>{{ application.gender }}</td>
           <td>{{ application.hp_number }}</td>
-          <td>{{ new Date(application.applied_at).toLocaleDateString() }}</td>
+          <td>{{ new Date(application.applied_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</td> 
           <td>{{ application.job_name }}</td>
           <td>{{ application.job_category }}</td>
           <td>{{ application.status }}</td>
@@ -484,4 +484,9 @@ export default {
   color: white !important;
   border-radius: 8px;
   }
+  
+  th, td {
+  text-align: center !important;
+  padding: 10px;
+}
 </style>

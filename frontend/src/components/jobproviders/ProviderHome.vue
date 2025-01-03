@@ -151,7 +151,9 @@
             <td>{{ item.working_hours }}</td>
             <td>{{ item.job_description }}</td>
             <td>{{ item.phone_num }}</td>  <!-- New phone_num field -->
-            <td>{{ new Date(item.created_at).toLocaleDateString() }}</td>
+            <td>{{ new Date(item.created_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</td>
+            <!-- <td>{{ new Date(item.created_at).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' }) }}</td> -->
+
             <td>
               <!-- Edit Icon Button -->
               <v-btn icon small @click="openEditDialog(item)" color="primary">

@@ -39,6 +39,8 @@
         </tr>
       </tbody>
     </v-simple-table>
+    <v-progress-circular v-if="loading" indeterminate color="primary" class="mx-auto" size="50"></v-progress-circular>
+
 
     <!-- Back Button -->
     <v-row justify="space-between" class="button-row">
@@ -184,17 +186,22 @@ export default {
       this.showPassword = !this.showPassword;
     },
     fetchUsers() {
+      this.loading = true;  // Start loading
       const apiUrl = process.env.VUE_APP_API_URL;
       axios
         .get(`${apiUrl}/users`, { withCredentials: true })
         .then((response) => {
           this.users = response.data;
+          this.loading = false;  // Stop loading after the request is done
+
         })
         .catch((error) => {
           this.snackbarText = 'Error fetching users';
           this.snackbarType = 'error';
           this.snackbar = true;
           console.error(error);
+          this.loading = false;  // Stop loading after the request is done
+
         });
     },
     goBack() {
