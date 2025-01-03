@@ -12,7 +12,7 @@
         <v-col cols="auto" class="button-container d-none d-md-flex"> 
           <v-btn text class="custom-button" to="/">Home</v-btn>
           <v-btn text class="custom-button" to="/job-search">Job Seeker</v-btn>
-          <v-btn text class="custom-button" to="/job-provide">Job Provide</v-btn>
+          <v-btn text class="custom-button" to="/job-provide">Job Provider</v-btn>
           <!-- <v-btn text class="custom-button" to="/about-us">About Us</v-btn> -->
           <v-btn text class="custom-button" to="/login">Login</v-btn>
         </v-col>
