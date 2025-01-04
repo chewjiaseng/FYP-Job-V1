@@ -11,6 +11,22 @@ import os
 import time
 import logging
 from werkzeug.utils import secure_filename
+import redis
+from dotenv import load_dotenv
+import base64
+from sqlalchemy import text
+from cryptography.fernet import Fernet
+from cryptography.fernet import InvalidToken
+import fitz
+import pytesseract
+from PIL import Image
+import io
+from datetime import datetime  # Ensure the import is at the top of your file
+import pytz  # Import pytz for handling time zones
+
+
+# Specify the path to the Tesseract executable
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Adjust this if your installation is different
 
 
 # Initialize Flask app
@@ -20,19 +36,34 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 # allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:8080').split(',')
 
+load_dotenv()
+environment = os.getenv('FLASK_ENV', 'development')
+
 
 # CORS Configuration
 # CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
-CORS(app, supports_credentials=True, origins='*')
+# CORS(app, supports_credentials=True, origins='*')
+frontend_url = os.getenv('FRONTEND_URL', 'https://job-frontend-hxx1.onrender.com')
+local_frontend_urls = ['http://localhost:8080', 'http://192.168.0.105:8080','http://192.168.0.104:8080']
 
+CORS(app, supports_credentials=True, origins=[frontend_url] + local_frontend_urls)
 
 # Secret key for sessions (use environment variables in production)
 app.secret_key = 'f333afb8a7da4ca70cf6db9c57bdc742'
 
 # Flask-Session Configuration
-app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_TYPE'] = 'redis'
 app.config['SESSION_FILE_DIR'] = os.path.join(app.root_path, 'flask_session')
 app.config['SESSION_PERMANENT'] = False  # Optional: session expiration
+
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url("rediss://red-crl9vqogph6c73e28qdg:tr0CPEn877CR8b5KQdjHDASLwKDv9L8F@oregon-redis.render.com:6379")
+
+# Example: Set other environment-specific configurations
+if environment == 'production':
+    app.config['SESSION_COOKIE_SECURE'] = True
+else:
+    app.config['SESSION_COOKIE_SECURE'] = False
 
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config['SESSION_COOKIE_SECURE'] = True  # Use this if you're on HTTPS
@@ -41,14 +72,14 @@ os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 Session(app)
 
 # Define the path to the session folder
-session_folder = 'D:/UPM registration/fyp local path github/FYP-Job-V1/backend flask/flask_session'
+# session_folder = 'D:/UPM registration/fyp local path github/FYP-Job-V1/backend flask/flask_session'
 now = time.time()
 
 # Delete session files older than 6 hours (21,600 seconds)
-for filename in os.listdir(session_folder):
-    file_path = os.path.join(session_folder, filename)
-    if os.path.getmtime(file_path) < now - 21600:  # 6 hours = 21600 seconds
-        os.remove(file_path)
+# for filename in os.listdir(session_folder):
+#     file_path = os.path.join(session_folder, filename)
+#     if os.path.getmtime(file_path) < now - 21600:  # 6 hours = 21600 seconds
+#         os.remove(file_path)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
@@ -56,11 +87,29 @@ login_manager.init_app(app)
 login_manager.login_view = '/login'  # Redirect to login if not authenticated
 
 # Database connection external URI
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://test2database2_user:Q5bjzhcPfYJR4KUuolAy6YfXyd6Qtfj0@dpg-crjqh65ds78s73ed1ns0-a.oregon-postgres.render.com/test2database2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://databasefyp2_user:bbQbNiZHBSrP4WG2Z0B4aokaBilNQABx@dpg-ctf691ogph6c73fk9140-a.oregon-postgres.render.com/databasefyp2'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
 db = SQLAlchemy(app)
+
+env_file = '.env.' + os.getenv('FLASK_ENV', 'development')
+
+# Explicitly load the environment variables from the correct .env file
+load_dotenv(dotenv_path=env_file)
+
+fernet_key = os.getenv('FERNET_KEY')
+if not fernet_key:
+    raise ValueError("FERNET_KEY is not set in the environment variables")
+
+cipher_suite = Fernet(fernet_key.encode())
+
+malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur')).astimezone(pytz.timezone('Asia/Kuala_Lumpur'))
+logging.info(f"Malaysia time to be stored: {malaysia_time}")
+
+@app.before_request
+def set_malaysia_timezone():
+    pass
 
 # Define User model
 class User(db.Model):
@@ -104,8 +153,9 @@ class Job(db.Model):
     working_place = db.Column(db.String(100), nullable=False)
     working_hours = db.Column(db.String(50), nullable=False)
     job_description = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)  # Make sure to match your column type
+    created_at = db.Column(db.TIMESTAMP(timezone=True), server_default=db.func.current_timestamp(), nullable=False)  # Ensure time zone handling
     provider_name = db.Column(db.String(255), nullable=False)
+    phone_num = db.Column(db.String(255), nullable=False)  # New phone_num column
 
 class Application(db.Model):
     __tablename__ = 'applications'
@@ -152,11 +202,69 @@ def job_recommendation(resume_text):
     return recommended_job
 
 def pdf_to_text(file):
-    reader = PdfReader(file)
-    text = ''
-    for page in range(len(reader.pages)):
-        text += reader.pages[page].extract_text()
+    pdf_bytes = file.read()
+    pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+    
+    text = ""
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        # Try extracting blocks of text
+        blocks = page.get_text("blocks")
+        for block in blocks:
+            text += block[4] + "\n"  # Block's text content
+    
+    pdf_document.close()
+
+    if not text.strip():
+        return None  # Return None if no text is extracted
     return text
+
+#To validate whether it is resume or not
+def is_valid_resume(text):
+    # List of common resume keywords
+    resume_keywords = ['experience', 'skills', 'education', 'contact', 'languages', 
+                       'name', 'projects', 'references', 'technical skill', 
+                       'soft skill', 'communication']
+
+    # Convert the text to lowercase for case-insensitive matching
+    text_lower = text.lower()
+
+    # Count the number of matching keywords in the text
+    matched_keywords = [keyword for keyword in resume_keywords if keyword in text_lower]
+    
+    # Define a threshold for validation (e.g., 3 or more keywords must be present)
+    return len(matched_keywords) >= 3
+
+#To check the resume if save in canva
+def extract_images_from_pdf(file):
+    pdf_bytes = file.read()
+    pdf_document = fitz.open(stream=pdf_bytes, filetype="pdf")
+    full_text = ""
+
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        image_list = page.get_images(full=True)
+
+        if image_list:
+            print(f"Page {page_num} contains {len(image_list)} images")
+            for image_index, img in enumerate(image_list, start=1):
+                xref = img[0]
+                base_image = pdf_document.extract_image(xref)
+                image_bytes = base_image["image"]
+
+                # Use OCR to extract text from the image without saving to file
+                image = Image.open(io.BytesIO(image_bytes))
+                extracted_text = pytesseract.image_to_string(image)
+                full_text += extracted_text + "\n"  # Accumulate text from all images
+
+        else:
+            print(f"No images found on page {page_num}")
+
+    pdf_document.close()
+    
+    # Return the accumulated text or None if empty
+    cleaned_text = full_text.strip()
+    return cleaned_text
 
 # Routes
 @app.route("/")
@@ -198,17 +306,18 @@ def signup():
     if not username or not email or not password:
         return jsonify({"error": "Please fill out all required fields."}), 400
 
-    # Use default PBKDF2 hashing
-    hashed_password = generate_password_hash(password)
+    # Encrypt the password
+    encrypted_password = cipher_suite.encrypt(password.encode()).decode()
 
     # Create a new user object
-    new_user = User(username=username, email=email, password=hashed_password, role=role)
+    new_user = User(username=username, email=email, password=encrypted_password, role=role)
 
     try:
         db.session.add(new_user)
         db.session.commit()
         app.logger.info(f"User {username} created successfully.")
-        return jsonify({"message": "User created successfully!"}), 201
+        return jsonify({"success": True, "message": "User created successfully!"}), 201
+
     except Exception as e:
         db.session.rollback()
         app.logger.error(f"Error occurred during signup: {e}")
@@ -227,32 +336,42 @@ def login():
 
     user = User.query.filter((User.username == identifier) | (User.email == identifier)).first()
 
-    if user and check_password_hash(user.password, password):
-        # Admin logic
-        if user.username == 'admin' and password == 'admin':
+    if user:
+        # Admin logic: Hardcoded check for admin credentials
+        if identifier == 'admin' and password == 'admin':
             login_user(user)
             app.logger.info(f"Admin user {user.username} logged in successfully.")
             return jsonify({
                 "message": "Login successful!",
                 "redirect": '/admin-home',
                 "username": user.username,
-                "role": user.role
+                "role": user.role,
+                "user_id": user.id  # Add user_id here
             }), 200
         
-        # Check if role matches
-        if user.role == role:
-            login_user(user)
-            app.logger.info(f"User {user.username} logged in successfully.")
-            redirect_url = '/seeker-home' if user.role == 'Job Seeker' else '/provider-home'
-            return jsonify({
-                "message": "Login successful!",
-                "redirect": redirect_url,
-                "username": user.username,
-                "role": user.role
-            }), 200
+        # Decrypt the password for regular users
+        decrypted_password = cipher_suite.decrypt(user.password.encode()).decode()
+
+        # Check if decrypted password matches the provided password
+        if password == decrypted_password:
+            # Check if role matches
+            if user.role == role:
+                login_user(user)
+                app.logger.info(f"User {user.username} logged in successfully.")
+                redirect_url = '/seeker-home' if user.role == 'Job Seeker' else '/provider-home'
+                return jsonify({
+                    "message": "Login successful!",
+                    "redirect": redirect_url,
+                    "username": user.username,
+                    "role": user.role,
+                    "user_id": user.id  # Add user_id here
+                }), 200
+            else:
+                app.logger.warning(f"Role mismatch for user: {identifier}")
+                return jsonify({"error": "Invalid role."}), 401
         else:
-            app.logger.warning(f"Role mismatch for user: {identifier}")
-            return jsonify({"error": "Invalid role."}), 401
+            app.logger.warning(f"Incorrect password for user: {identifier}")
+            return jsonify({"error": "Invalid credentials."}), 401
     else:
         app.logger.warning(f"Failed login attempt for identifier: {identifier}")
         return jsonify({"error": "Invalid credentials."}), 401
@@ -286,12 +405,17 @@ def create_job():
     working_place = data.get('working_place')
     working_hours = data.get('working_hours')
     job_description = data.get('job_description')
+    phone_num = data.get('phone_num')  # New phone number field
 
     if not all([job_name, job_category, salary, working_place, working_hours, job_description]):
         return jsonify({"error": "Missing fields in request data"}), 400
 
     job_provider_id = current_user.id
     provider_name = current_user.username  # Get the username of the current user
+
+    malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))  # Ensure it's in Malaysia time
+    db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+
 
     new_job = Job(
         job_name=job_name,
@@ -301,7 +425,10 @@ def create_job():
         salary=salary,
         working_place=working_place,
         working_hours=working_hours,
-        job_description=job_description
+        job_description=job_description,
+        phone_num=phone_num,  # Set phone number in new job instance
+        created_at=malaysia_time  # Use Malaysia time instead of UTC
+
     )
 
     try:
@@ -327,35 +454,61 @@ def provider_jobs():
         'working_place': job.working_place,
         'working_hours': job.working_hours,
         'job_description': job.job_description,
-        'created_at': job.created_at
+        'created_at': job.created_at,
+        'phone_num': job.phone_num  # Include the new phone_num field
     } for job in jobs]
     
     return jsonify(jobs_list), 200
 
-# Route to display users (for debugging purposes)
 @app.route("/users", methods=['GET'])
 def users():
     all_users = User.query.all()
-    users_data = [{"username": user.username, "email": user.email, "role": user.role} for user in all_users]
+    users_data = []
+    for user in all_users:
+        try:
+            # Try to decrypt the password if it was encrypted with Fernet
+            decrypted_password = cipher_suite.decrypt(user.password.encode()).decode() if user.password else None
+        except InvalidToken:
+            # If the password is not a valid Fernet token, skip decryption or handle accordingly
+            decrypted_password = user.password  # Optionally show 'Invalid' or 'Unencrypted' status
+
+        users_data.append({
+            "username": user.username,
+            "email": user.email,
+            "role": user.role,
+            "password": decrypted_password
+        })
+    
     return jsonify(users_data), 200
 
 # Updating job details for Job provide
 @app.route('/update-job/<int:job_id>', methods=['PUT'])
 @login_required
 def update_job(job_id):
-    job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
-    
+    # Check if the current user is admin
+    if current_user.username == "admin":
+        job = Job.query.filter_by(id=job_id).first()  # Admin can access any job without filtering by job_provider_id
+    else:
+        # For regular users (job providers), only allow access to their own jobs
+        job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
+
     if not job:
         return jsonify({"error": "Job not found or you're not authorized to update this job."}), 404
     
     data = request.json
     
+    malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))  # Ensure it's in Malaysia time
+    db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+
     job.job_name = data.get('job_name', job.job_name)
     job.job_category = data.get('job_category', job.job_category)
     job.salary = data.get('salary', job.salary)
     job.working_place = data.get('working_place', job.working_place)
     job.working_hours = data.get('working_hours', job.working_hours)
     job.job_description = data.get('job_description', job.job_description)
+    job.phone_num = data.get('phone_num', job.phone_num)
+    job.created_at=malaysia_time  # Use Malaysia time instead of UTC
+
     
     try:
         db.session.commit()
@@ -368,8 +521,14 @@ def update_job(job_id):
 @app.route('/delete-job/<int:job_id>', methods=['DELETE'])
 @login_required
 def delete_job(job_id):
-    job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
     
+    # Check if the current user is admin
+    if current_user.username == "admin":
+        job = Job.query.filter_by(id=job_id).first()  # Admin can delete any job without filtering by job_provider_id
+    else:
+        # For regular users (job providers), only allow access to their own jobs
+        job = Job.query.filter_by(id=job_id, job_provider_id=current_user.id).first()
+
     if not job:
         return jsonify({"error": "Job not found or you're not authorized to delete this job."}), 404
     
@@ -382,7 +541,7 @@ def delete_job(job_id):
         return jsonify({"error": "Error occurred during job deletion: " + str(e)}), 500
     
 #get all the jobs to seeker
-@app.route('/jobs', methods=['GET'])
+@app.route('/getjobs', methods=['GET'])
 @login_required
 def get_all_jobs():
     jobs = Job.query.all()
@@ -394,9 +553,11 @@ def get_all_jobs():
         'salary': job.salary,
         'working_place': job.working_place,
         'working_hours': job.working_hours,
+        'phone_num': job.phone_num,  # Add phone number here
         'job_description': job.job_description,
         'created_at': job.created_at,
-        'provider_name': job.provider_name
+        'provider_name': job.provider_name,
+        'phone_num': job.phone_num
     } for job in jobs]
     
     return jsonify(jobs_list), 200
@@ -429,6 +590,12 @@ def apply():
 
     if not all(data.values()):
         return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    # Set timezone for this session to Malaysia time
+    db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+
+    # Get current Malaysia time
+    malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
 
     # Create the application object with optional resume_pdf_content
     application = Application(
@@ -438,7 +605,9 @@ def apply():
         identification_card=data['identification_card'],
         gender=data['gender'],
         hp_number=data['hp_number'],
-        resume_pdf=resume_pdf_content  # Can be None if no PDF is uploaded
+        resume_pdf=resume_pdf_content,  # Can be None if no PDF is uploaded
+        applied_at=malaysia_time  # Set the Malaysia time when the application is made
+
     )
 
     try:
@@ -449,7 +618,7 @@ def apply():
         db.session.rollback()
         print(e)
         return jsonify({'success': False, 'message': 'Failed to apply'}), 500
-    
+
 #For recommendation show the recommend jobs, retrieve the jobs based on predicted category
 from sqlalchemy import func    
 @app.route('/jobs', methods=['POST'])
@@ -463,8 +632,26 @@ def fetch_jobs():
     # Check if the file is a PDF or a text file
     if resume.filename.endswith('.pdf'):
         resume_text = pdf_to_text(resume)
+        
+        # If no text found in PDF, try extracting from images
+        if resume_text is None:
+            print("No text found in PDF, attempting to extract images from the PDF.")
+            resume.seek(0)  # Reset file pointer to the start
+            resume_text = extract_images_from_pdf(resume)
+
     else:
         resume_text = resume.read().decode('utf-8')
+
+    # print("Extracted Text:", resume_text)  # Log the extracted text for debugging
+
+    # Validate if the text is likely a resume
+    # Check if resume_text is still None
+    if resume_text is None or resume_text.strip() == "":
+        return jsonify({"message": "The uploaded file does not contain valid resume text."}), 400
+
+    # Perform the resume validation on the extracted text
+    if not is_valid_resume(resume_text):
+        return jsonify({"message": "The uploaded file does not appear to be a valid resume."}), 400
 
     # Predict the category and recommend a job based on resume content
     predicted_category = predict_category(resume_text)
@@ -486,7 +673,8 @@ def fetch_jobs():
         'working_hours': job.working_hours,
         'job_description': job.job_description,
         'created_at': job.created_at,
-        'provider_name': job.provider_name
+        'provider_name': job.provider_name,
+        'phone_num': job.phone_num
     } for job in jobs]
     
     # Return the predicted category and recommended job, even if no jobs are found
@@ -502,8 +690,6 @@ def fetch_jobs():
     return jsonify(response_data), 200
 
 #For the Job provider to view the applications based on their own jobs 
-import base64
-from sqlalchemy import text
 
 @app.route('/provider-applications', methods=['GET'])
 def get_provider_applications():
@@ -580,6 +766,189 @@ def update_application_status(application_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
+
+#For admin update and delete
+@app.route('/update-user/<username>', methods=['PUT'])
+def update_user(username):
+    user_data = request.get_json()
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Update fields
+    user.email = user_data.get('email', user.email)
+
+    # Encrypt the password if it's being updated
+    if user_data.get('password'):
+        user.password = cipher_suite.encrypt(user_data['password'].encode()).decode()
+
+    db.session.commit()
+    return jsonify({'message': 'User updated successfully'}), 200
+
+@app.route('/delete-user/<username>', methods=['DELETE'])
+def delete_user(username):
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({'message': 'User deleted successfully'}), 200
+
+# Route to retrieve all applications (no provider filter)
+@app.route('/all-applications', methods=['GET'])
+def get_all_applications():
+    try:
+        query = text("""
+        SELECT 
+            a.id AS application_id,
+            a.name AS applicant_name,
+            a.identification_card,
+            a.gender,
+            a.hp_number,
+            a.status,
+            a.applied_at,
+            j.job_name,
+            j.job_category,
+            j.working_place,
+            u.username AS job_provider_name,
+            a.resume_pdf
+        FROM 
+            applications a
+        JOIN 
+            jobs j ON a.job_id = j.id
+        JOIN 
+            "user" u ON j.job_provider_id = u.id;
+        """)
+
+        result = db.session.execute(query)
+
+        applications = result.mappings().all()
+
+        response = []
+        for row in applications:
+            row_dict = dict(row)
+            # Encode resume_pdf as base64 if it exists
+            if row.resume_pdf:
+                row_dict['resume_pdf'] = base64.b64encode(row.resume_pdf).decode('utf-8')
+            response.append(row_dict)
+
+        return jsonify(response)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/update-application/<int:application_id>', methods=['PUT'])
+def update_application(application_id):
+    application = Application.query.get(application_id)
+    
+    if not application:
+        return jsonify({'error': 'Application not found'}), 404
+
+    try:
+        # Set timezone for this session to Malaysia time
+        db.session.execute(text("SET TIME ZONE 'Asia/Kuala_Lumpur'"))
+        
+        # Get current Malaysia time
+        malaysia_time = datetime.now(pytz.timezone('Asia/Kuala_Lumpur'))
+        # Update the application fields
+        application.name = request.form.get('name', application.name)
+        application.identification_card = request.form.get('identification_card', application.identification_card)
+        application.gender = request.form.get('gender', application.gender)
+        application.hp_number = request.form.get('hp_number', application.hp_number)
+        application.status = request.form.get('status', application.status)
+        application.applied_at = malaysia_time  # Update `applied_at` with Malaysia time
+
+        # Check for remove_resume flag
+        if request.form.get('remove_resume') == 'true':
+            application.resume_pdf = None  # Set to None to remove the current resume
+
+        # Handle resume file upload after checking for removal
+        if 'resume_pdf' in request.files:
+            resume_pdf = request.files['resume_pdf']
+            if resume_pdf and allowed_file(resume_pdf.filename):
+                filename = secure_filename(resume_pdf.filename)
+                application.resume_pdf = resume_pdf.read()  # Update the resume_pdf content
+
+        db.session.commit()
+        return jsonify({'message': 'Application updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    
+@app.route('/delete-application/<int:application_id>', methods=['DELETE'])
+def delete_application(application_id):
+    application = Application.query.get(application_id)
+    
+    if not application:
+        return jsonify({'error': 'Application not found'}), 404
+
+    try:
+        db.session.delete(application)
+        db.session.commit()
+        return jsonify({'message': 'Application deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+#Count the number of the user,jobs and applications
+@app.route('/counts', methods=['GET'])
+def get_counts():
+    try:
+        # Get the count of users
+        users_count = User.query.count()
+
+        # Get the count of jobs
+        jobs_count = Job.query.count()
+
+        # Get the count of applications
+        applications_count = Application.query.count()
+
+        # Return the counts as a JSON response
+        return jsonify({
+            "usersCount": users_count,
+            "jobsCount": jobs_count,
+            "applicationsCount": applications_count
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/checkcurrentapplications', methods=['GET'])
+@login_required
+def check_current_applications():
+    # Get the current user's ID
+    user_id = current_user.id
+    
+    # Query applications for the current user (filter by job_seeker_id)
+    applications = Application.query.filter(Application.job_seeker_id == user_id).all()
+    
+    # Create a list of applications, including the applicant's name
+    applications_list = []
+    for application in applications:
+        application_data = {
+            "job_id": application.job.id,
+            "job_name": application.job.job_name,  # Assuming you have a job related to the application
+            "name": application.name,  # Applicant's name
+            "identification_card": application.identification_card,
+            "gender": application.gender,
+            "hp_number": application.hp_number,
+            "applied_at": application.applied_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": application.status,
+            "resume_pdf": None,  # Placeholder for resume status
+        }
+        
+        # Encode resume PDF as base64 if it exists
+        if application.resume_pdf:
+            application_data["resume_pdf"] = base64.b64encode(application.resume_pdf).decode('utf-8')
+        
+        applications_list.append(application_data)
+    
+    return jsonify(applications_list)
+  
 
 if __name__ == "__main__":
     # Ensure the session directory exists

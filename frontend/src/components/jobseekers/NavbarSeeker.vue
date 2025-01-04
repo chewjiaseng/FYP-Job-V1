@@ -1,6 +1,6 @@
 <template>
   <v-app-bar app class="custom-navbar">
-    <v-container>
+    <v-container class="pa-0">
       <v-row no-gutters align="center">
         <v-col cols="auto">
           <v-toolbar-title class="custom-title">
@@ -8,14 +8,36 @@
           </v-toolbar-title>
         </v-col>
         <v-spacer></v-spacer>
-        <v-col cols="auto" class="button-container">
+
+        <!-- Desktop buttons -->
+        <v-col cols="auto" class="button-container d-none d-md-flex"> 
           <v-btn text class="custom-button" to="/seeker-home">Home</v-btn>
           <v-btn text class="custom-button" to="/job-recommendation">Job Recommendation</v-btn>
+          <v-btn text class="custom-button" to="/check-applications">Applications</v-btn> <!-- Updated Route -->
+
           <v-btn text class="custom-button logout-button" @click="logout">Logout</v-btn>
         </v-col>
+
+        <!-- Mobile Hamburger Menu for smaller screens -->
+        <v-col class="d-flex d-md-none">
+          <v-menu offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn icon v-bind="attrs" v-on="on">
+                <v-icon>mdi-menu</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item link to="/seeker-home">Home</v-list-item>
+              <v-list-item link to="/job-recommendation">Job Recommendation</v-list-item>
+              <v-list-item link @click="logout">Logout</v-list-item>
+            </v-list>
+          </v-menu>
+        </v-col>
         <v-spacer></v-spacer>
+
+        <!-- Username on the right side -->
         <v-col cols="auto" class="right-user">
-          <span v-if="username" class="username">{{ username }}</span>
+          <span v-if="username" class="username" style="color: aliceblue;">{{ username }}</span>
         </v-col>
       </v-row>
     </v-container>
@@ -28,77 +50,86 @@ import { mapGetters } from 'vuex';
 export default {
   computed: {
     ...mapGetters(['username']),
-    username() {
-      console.log('Navbar username:', this.$store.getters.username);
-      return this.$store.getters.username;
-    }
   },
   methods: {
     logout() {
-      this.$store.dispatch('updateUsername', ''); // Clear username from Vuex store
-      sessionStorage.removeItem('username'); // Clear username from sessionStorage
+      this.$store.dispatch('updateUsername', '');
+      sessionStorage.removeItem('username');
       sessionStorage.removeItem("userId");
       sessionStorage.removeItem("username");
       localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('userRole'); // Clear user role
+      localStorage.removeItem('userRole');
 
-
-      this.$router.push('/login'); // Redirect to login page
+      this.$router.push('/login');
     }
   }
 }
 </script>
 
-
 <style scoped>
 .custom-navbar {
-  background-color: #4caf50; /* Customize navbar background color */
+  background-color: #201a94 !important;
+  margin: 0;
+  padding: 0;
 }
 
 .custom-title {
-  font-size: 1.5rem; /* Customize title font size */
-  font-family: 'Arial', sans-serif; /* Customize title font family */
+  font-size: 1.5rem;
+  font-family: 'Arial', sans-serif;
 }
 
 .button-container {
   display: flex;
-  gap: 16px; /* Space between buttons */
-  justify-content: center; /* Center the buttons */
+  gap: 16px;
+  justify-content: center;
 }
 
 .custom-button {
-  margin-top: 5px;
-  color: rgb(0, 0, 0); /* Customize button text color */
-  font-size: 1rem; /* Customize button text size */
+  color: black;
+  font-size: 1rem;
 }
 
 .custom-button:hover {
-  color: #ffd700; /* Customize button text color on hover */
-}
-
-.logo-image {
-  height: 55px; /* Adjust the height of the logo as needed */
-  margin-top: 15px;
-  width: auto; /* Keep aspect ratio */
+  color: #ffd700;
 }
 
 .logout-button {
-  color: red;
+  color: red !important;
+}
+
+.logo-image {
+  margin-top: 20%;
+  height: 55px;
+  width: auto;
 }
 
 .right-user {
   display: flex;
-  align-items: center; /* Vertically center-aligns the username */
-  justify-content: flex-end; /* Pushes the username to the right */
+  align-items: center;
+  justify-content: flex-end;
   margin-top: 5px;
-  height: 100% /* Align user text to the right */
+  height: 100%;
 }
 
 .username {
-  padding-top: 5px;  /* Adds space above the username text */
-  margin-top: 0;     /* Reset margin-top to avoid negative impact */
-  color: black;      /* Set the color to black */
-  font-size: 1rem; /* Adjust the font size if needed */
-  line-height: 1.5; /* Adjust the font size if needed */
+  padding-top: 5px;
+  color: black;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .logo-image {
+    height: 45px;
+  }
+
+  .custom-button {
+    font-size: 0.875rem;
+  }
+
+  .right-user {
+    justify-content: center;
+    font-size: 0.875rem;
+  }
 }
 </style>
