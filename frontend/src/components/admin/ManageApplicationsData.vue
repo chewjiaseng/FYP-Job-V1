@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <h1>All Applications</h1>
+    <h1>All Application</h1>
 
   <!-- Loading Indicator -->
   <v-progress-circular v-if="loading" indeterminate color="primary" class="ma-2"
