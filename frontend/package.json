@@ -5,16 +5,18 @@
     "axios": "^1.7.4",
     "chart.js": "^4.4.4",
     "lodash": "^4.17.21",
+    "vue": "^3.5.13",
     "vue-chartjs": "^5.3.1",
-    "vue-router": "^3.6.5",
-    "vuetify": "^2.7.2",
-    "vuex": "^3.6.2"
+    "vue-router": "^4.5.0",
+    "vuetify": "^3.7.6",
+    "vuex": "^4.1.0",
+    "webpack-plugin-vuetify": "^3.0.3"
   },
   "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
-    "vue-cli-plugin-vuetify": "~2.5.8",
-    "vuetify-loader": "^1.7.0"
+    "vitest": "^2.1.8"
   },
   "scripts": {
     "serve": "vue-cli-service serve",

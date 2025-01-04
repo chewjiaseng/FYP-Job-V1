@@ -1,12 +1,11 @@
 // src/store/index.js
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
-  state: {
-    username: sessionStorage.getItem('username') || ''
+const store = createStore({
+  state() {
+    return {
+      username: sessionStorage.getItem('username') || ''
+    };
   },
   mutations: {
     setUsername(state, username) {
@@ -20,6 +19,8 @@ export default new Vuex.Store({
     }
   },
   getters: {
-    username: state => state.username
+    username: (state) => state.username
   }
 });
+
+export default store;
