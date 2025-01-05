@@ -1,0 +1,88 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`JobProvider.vue > matches the snapshot 1`] = `
+"<div data-v-94203e48="" class="v-application v-theme--light v-layout v-layout--full-height v-locale--is-ltr">
+  <div class="v-application__wrap">
+    <div data-v-94203e48="" class="v-container v-container--fluid v-locale--is-ltr job-provider-page" padding="0">
+      <header data-v-94203e48="" class="v-toolbar v-toolbar--density-default v-theme--light v-locale--is-ltr v-app-bar custom-navbar" style="top: 0px; z-index: 1004; transform: translateY(0%); position: fixed; transition: none !important;" app="">
+        <!---->
+        <div class="v-toolbar__content" style="height: 64px;">
+          <!---->
+          <!---->
+          <div class="v-container v-locale--is-ltr">
+            <div class="v-row v-row--no-gutters align-center">
+              <div class="v-col v-col-auto">
+                <div class="v-toolbar-title custom-title">
+                  <div class="v-toolbar-title__placeholder">
+                    <!----><img src="/src/assets/logo.jpg" alt="Logo" class="logo-image">
+                  </div>
+                </div>
+              </div>
+              <div class="v-spacer"></div><!-- Add v-btn-toggle to collapse buttons into a menu on small screens -->
+              <div class="v-col v-col-auto button-container d-none d-md-flex"><a class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text custom-button" href="/"><span class="v-btn__overlay"></span><span class="v-btn__underlay"></span>
+                  <!----><span class="v-btn__content" data-no-activator="">Home</span>
+                  <!---->
+                  <!---->
+                </a><a class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text custom-button" href="/job-search"><span class="v-btn__overlay"></span><span class="v-btn__underlay"></span>
+                  <!----><span class="v-btn__content" data-no-activator="">Job Seeker</span>
+                  <!---->
+                  <!---->
+                </a><a class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text custom-button" href="/job-provide"><span class="v-btn__overlay"></span><span class="v-btn__underlay"></span>
+                  <!----><span class="v-btn__content" data-no-activator="">Job Provider</span>
+                  <!---->
+                  <!---->
+                </a><!-- <v-btn text class="custom-button" to="/about-us">About Us</v-btn> --><a class="v-btn v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text custom-button" href="/login"><span class="v-btn__overlay"></span><span class="v-btn__underlay"></span>
+                  <!----><span class="v-btn__content" data-no-activator="">Login</span>
+                  <!---->
+                  <!---->
+                </a></div><!-- Mobile Hamburger Menu for smaller screens -->
+              <div class="v-col d-flex d-md-none"><button type="button" class="v-btn v-btn--icon v-theme--light v-btn--density-default v-btn--size-default v-btn--variant-text"><span class="v-btn__overlay"></span><span class="v-btn__underlay"></span>
+                  <!----><span class="v-btn__content" data-no-activator=""><i class="mdi-menu mdi v-icon notranslate v-theme--light v-icon--size-default" aria-hidden="true"></i></span>
+                  <!---->
+                  <!---->
+                </button>
+                <!---->
+              </div>
+              <div class="v-spacer"></div>
+            </div>
+          </div>
+          <!---->
+        </div>
+        <transition-stub name="expand-transition" appear="false" persisted="false" css="true">
+          <!---->
+        </transition-stub>
+      </header>
+      <h1 data-v-94203e48="" class="header-text">Job Provider </h1>
+      <p data-v-94203e48="" class="description-text"> In today's dynamic job market, job providers play a crucial role in connecting skilled individuals with part-time employment opportunities. Whether you are an individual seeking help for a specific task or an organization looking to fill short-term roles, our platform makes it easy to post job listings that attract the right candidates. Our user-friendly interface simplifies the process, allowing job providers to manage postings seamlessly and reach a diverse pool of potential hires. Join us in fostering flexible work opportunities that benefit both providers and seekers alike! </p>
+      <div data-v-94203e48="" class="v-row images-row">
+        <div data-v-94203e48="" class="v-col-md-6 v-col-12 image-container">
+          <div data-v-94203e48="" class="v-responsive v-img v-img--booting image" aria-label="Job Provider Image 2" role="img">
+            <div class="v-responsive__sizer"></div>
+            <!---->
+            <transition-stub name="fade-transition" appear="false" persisted="false" css="true">
+              <!---->
+            </transition-stub>
+            <!---->
+            <!---->
+            <!---->
+            <!---->
+          </div>
+        </div>
+        <div data-v-94203e48="" class="v-col-md-6 v-col-12 image-container">
+          <div data-v-94203e48="" class="v-responsive v-img v-img--booting image" aria-label="Job Provider Image 3" role="img">
+            <div class="v-responsive__sizer"></div>
+            <!---->
+            <transition-stub name="fade-transition" appear="false" persisted="false" css="true">
+              <!---->
+            </transition-stub>
+            <!---->
+            <!---->
+            <!---->
+            <!---->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>"
+`;

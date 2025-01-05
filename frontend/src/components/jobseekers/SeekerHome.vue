@@ -1,4 +1,5 @@
 <template>
+  <v-app>
   <div>
     <NavbarSeeker :username="username" />
 
@@ -165,6 +166,7 @@
       <v-btn text @click="snackbar.show = false">Close</v-btn>
     </v-snackbar>
   </div>
+</v-app>
 </template>
 
 <script>

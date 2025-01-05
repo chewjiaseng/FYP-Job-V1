@@ -1,4 +1,5 @@
 <template>
+  <v-app>
     <div class="resume-background">
       <NavbarSeeker :username="username" />
       <v-container class="resume-form" style="margin-top: 20px;">
@@ -130,6 +131,7 @@
         </v-alert> -->
       </v-container>
     </div>
+  </v-app>
 </template>
 
 <script>

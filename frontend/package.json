@@ -1,10 +1,13 @@
 {
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "@pinia/testing": "^0.1.7",
     "@vue/cli-service": "^5.0.8",
     "axios": "^1.7.4",
     "chart.js": "^4.4.4",
+    "esbuild": "^0.24.2",
     "lodash": "^4.17.21",
+    "text-encoding": "^0.7.0",
     "vue": "^3.5.13",
     "vue-chartjs": "^5.3.1",
     "vue-router": "^4.5.0",
@@ -14,13 +17,16 @@
   },
   "devDependencies": {
     "@vue/test-utils": "^2.4.6",
+    "happy-dom": "^16.3.0",
     "sass": "~1.32.0",
     "sass-loader": "^10.0.0",
+    "vite-plugin-vuetify": "^2.0.4",
     "vitest": "^2.1.8"
   },
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "test": "vitest"
   }
 }
