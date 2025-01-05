@@ -3,7 +3,7 @@
     <v-container>
       <Navbar />
       <h1>About Us Page</h1>
-      <h1>This is another thing i want to change to github</h1>
+      <h1>This is another thing i want to change to githubs</h1>
       <!-- Add about us information here -->
     </v-container>
   </template>
