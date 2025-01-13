@@ -1,6 +1,8 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { vi } from 'vitest';
 import axios from 'axios';
+import Vuetify from 'vuetify';
+import { createVuetify } from 'vuetify'; // Vuetify v3
 import ManageUserData from '@/components/admin/ManageUserData.vue';
 
 // Mock axios
@@ -8,11 +10,14 @@ vi.mock('axios');
 
 describe('ManageUserData.vue', () => {
   let wrapper;
+  let vuetify;
 
   beforeEach(() => {
+    vuetify = createVuetify(); // Initialize Vuetify (Vuetify v3)
+
     wrapper = mount(ManageUserData, {
       global: {
-        plugins: [vuetify],
+        plugins: [vuetify], // Include Vuetify as a plugin
       },
     });
 
@@ -25,7 +30,7 @@ describe('ManageUserData.vue', () => {
     axios.post.mockResolvedValueOnce({ data: { success: true } });
 
     // Trigger addUser method
-    await wrapper.vm.addUser();  // Wait for promise resolution
+    await wrapper.vm.addUser(); // Wait for promise resolution
     await flushPromises(); // Ensure async promises are flushed
 
     // Check that the snackbar displays the success message
@@ -39,7 +44,7 @@ describe('ManageUserData.vue', () => {
     axios.post.mockRejectedValueOnce(new Error('Failed to create user'));
 
     // Trigger addUser method
-    await wrapper.vm.addUser();  // Wait for promise resolution
+    await wrapper.vm.addUser(); // Wait for promise resolution
     await flushPromises(); // Ensure async promises are flushed
 
     // Check that the snackbar displays the error message

@@ -1,5 +1,7 @@
 import CreateJob from '@/components/jobproviders/createjob.vue' // Adjust path if necessary
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+
 
 // Mock window.alert
 global.alert = vi.fn();
