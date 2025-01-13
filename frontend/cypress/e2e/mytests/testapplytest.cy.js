@@ -59,19 +59,19 @@ describe('Apply for a Job - SeekerHome Test (Direct Access)', () => {
     .type('011');
 
      // Open the gender dropdown and select "Male"
-  cy.get('.v-select') // Target the gender select field
-  .click(); // Open the dropdown
+    cy.get('.v-select') // Target the gender select field
+    .click(); // Open the dropdown
 
-cy.get('.v-list-item') // Target the dropdown list items
-  .contains('Male') // Select the "Male" option
-  .click(); // Click to select "Male"
+    cy.get('.v-list-item') // Target the dropdown list items
+      .contains('Male') // Select the "Male" option
+      .click(); // Click to select "Male"
 
     cy.contains('HP Number') // Find the label
         .parent() // Go to the parent v-text-field
         .find('input') // Find the input inside the v-text-field
         .type('01112345678'); // Type the username
     
-        cy.get('input[type="file"]').attachFile('resume.pdf', { allowEmpty: true });
+    cy.get('input[type="file"]').attachFile('myresume.pdf', { allowEmpty: true });
 
     // Mock the POST request for job application submission
     cy.intercept('POST', '/apply', {
