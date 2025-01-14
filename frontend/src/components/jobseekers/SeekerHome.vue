@@ -116,12 +116,14 @@
             </v-card-title>
             <v-card-subtitle class="job-category">{{ job.job_category }}</v-card-subtitle>
             <v-card-text>
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
               <p class="job-detail left-align"><strong>Place:</strong> {{ job.working_place }}</p>
               <p class="job-detail left-align"><strong>Hours:</strong> {{ job.working_hours }}</p>
-              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</p> 
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
               <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Contact:</strong> {{ job.phone_num }}</p> <!-- Add Contact here -->
+              <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Salary Range:</strong> {{ job.salary }}</p>
+
               <v-btn text class="expand-btn" @click="toggleExpand(job.id)">
                 {{ isExpanded(job.id) ? 'Show Less' : 'Show More' }}
               </v-btn>
