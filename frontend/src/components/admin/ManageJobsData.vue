@@ -168,12 +168,14 @@
           <td>{{ job.provider_name }}</td> <!-- New column for provider name -->
           <td>{{ new Date(job.created_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</td>
           <td>
-            <v-btn icon small @click="openEditDialog(job)">
-              <v-icon color="blue">mdi-pencil</v-icon>
-            </v-btn>
-            <v-btn icon small @click="confirmDelete(job.id)">
-              <v-icon color="red">mdi-delete</v-icon>
-            </v-btn>
+            <div style="display: flex; gap: 8px;">
+              <v-btn icon small dense @click="openEditDialog(job)">
+                <v-icon color="blue">mdi-pencil</v-icon>
+              </v-btn>
+              <v-btn icon small dense @click="confirmDelete(job.id)">
+                <v-icon color="red">mdi-delete</v-icon>
+              </v-btn>
+            </div>
           </td>
         </tr>
       </tbody>

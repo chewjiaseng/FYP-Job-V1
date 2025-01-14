@@ -192,7 +192,8 @@
       <v-card-text>
         <v-form>
           <v-text-field v-model="editApplicationData.applicant_name" label="Applicant Name"></v-text-field>
-          <v-text-field v-model="editApplicationData.identification_card" label="ID Card"></v-text-field>
+          <v-text-field v-model="editApplicationData.identification_card" label="Identification Card/Passport Number"></v-text-field>
+          <v-text-field v-model="editApplicationData.seekeremail" label="Email"></v-text-field>
           
           <!-- Gender Selection -->
           <v-select
@@ -201,7 +202,7 @@
             label="Gender"
           ></v-select>
 
-          <v-text-field v-model="editApplicationData.hp_number" label="Phone"></v-text-field>
+          <v-text-field v-model="editApplicationData.hp_number" label="Phone Number"></v-text-field>
 
           <!-- Status Selection -->
           <v-select
@@ -365,6 +366,7 @@ export default {
       const formData = new FormData();
       formData.append('name', this.editApplicationData.applicant_name);
       formData.append('identification_card', this.editApplicationData.identification_card);
+      formData.append('seekeremail', this.editApplicationData.seekeremail);
       formData.append('gender', this.editApplicationData.gender);
       formData.append('hp_number', this.editApplicationData.hp_number);
       formData.append('status', this.editApplicationData.status);

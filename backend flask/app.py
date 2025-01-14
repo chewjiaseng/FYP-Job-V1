@@ -793,6 +793,13 @@ def update_user(username):
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
+    # Check if the new email is already in use by another user
+    new_email = user_data.get('email')
+    if new_email and new_email != user.email:
+        existing_email = User.query.filter_by(email=new_email).first()
+        if existing_email:
+            return jsonify({'error': 'Email already in use. Please choose a different email.'}), 400
+
     # Update fields
     user.email = user_data.get('email', user.email)
 
@@ -875,6 +882,7 @@ def update_application(application_id):
         # Update the application fields
         application.name = request.form.get('name', application.name)
         application.identification_card = request.form.get('identification_card', application.identification_card)
+        application.seekeremail = request.form.get('seekeremail', application.seekeremail)
         application.gender = request.form.get('gender', application.gender)
         application.hp_number = request.form.get('hp_number', application.hp_number)
         application.status = request.form.get('status', application.status)

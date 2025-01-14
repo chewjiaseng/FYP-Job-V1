@@ -25,9 +25,9 @@
               <v-textarea v-model="job_description" label="Job Description" required outlined class="compact-text-area"></v-textarea>
               
               <!-- Display User ID -->
-              <v-chip class="ma-2 user-id-chip">
+              <!-- <v-chip class="ma-2 user-id-chip">
                 <span>User ID: {{ userId }}</span>
-              </v-chip>
+              </v-chip> -->
 
               <!-- Button Container -->
               <div class="button-container">

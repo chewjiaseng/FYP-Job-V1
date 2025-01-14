@@ -225,7 +225,13 @@ export default {
           this.snackbar = true;
         })
         .catch((error) => {
-          this.snackbarText = 'Update failed';
+          if (error.response && error.response.data && error.response.data.error) {
+            // Show backend error message
+            this.snackbarText = error.response.data.error;
+          } else {
+            // Generic error message
+            this.snackbarText = 'Update failed';
+          }
           this.snackbarType = 'error';
           this.snackbar = true;
           console.error(error);
@@ -272,10 +278,17 @@ export default {
         this.fetchUsers(); // Refresh user list
       })
       .catch((error) => {
-        this.snackbarText = 'Failed to add user';
-        this.snackbarType = 'error';
-        this.snackbar = true;
-        console.error(error);
+        // Handle errors
+        if (error.response && error.response.data && error.response.data.error) {
+            // Show backend error message
+            this.snackbarText = error.response.data.error;
+          } else {
+            // Generic error message
+            this.snackbarText = 'Failed to add user';
+          }
+          this.snackbarType = 'error';
+          this.snackbar = true;
+          console.error(error);
       })
       .finally(() => {
         this.loading = false;
