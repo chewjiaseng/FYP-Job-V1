@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <h1>All Applications</h1>
+    <h1 style="margin-bottom: 20px;">All Applications</h1>
 
   <!-- Loading Indicator -->
   <v-progress-circular v-if="loading" indeterminate color="primary" class="ma-2"
@@ -8,7 +8,7 @@
 
   <!-- Search and Filters -->
   <v-row class="mb-4" align="center">
-      <v-col cols="8" sm="6">
+      <v-col cols="8" sm="5">
         <v-text-field
           v-model="searchQuery"
           label="Search Job Name"
@@ -60,68 +60,76 @@
         </v-menu>
       </v-col>
 
-      <v-col cols="4" sm="3" class="d-flex justify-start" style="margin-top: -30px;">
-        <div class="d-flex flex-wrap align-center" style="flex-grow: 1;">
-          <v-menu v-model="categoryMenu" offset-y class="flex-grow-1">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-right: 10px;">
-                Category
-              </v-btn>
-            </template>
-            <v-card style="max-height: 300px; overflow-y: auto;">
-              <v-list>
-                <v-list-item>
-                  <v-checkbox
-                    v-model="selectedCategories"
-                    :value="'All'"
-                    label="All"
-                    @change="handleAllCategorySelection"
-                    @click.stop
-                  />
-                </v-list-item>
-                <v-list-item v-for="category in categories" :key="category">
-                  <v-checkbox
-                    v-model="selectedCategories"
-                    :value="category"
-                    :label="category"
-                    @change="handleCategorySelection"
-                    @click.stop
-                  />
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
+       <!-- Category and Date Filters + Reset Button -->
+      <v-col cols="4" sm="4" class="d-flex align-center">
+        <!-- Category Filter -->
+        <v-menu v-model="categoryMenu" offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-bind="attrs"
+              v-on="on"
+              label="Filter by Category"
+              readonly
+              :value="selectedCategories.includes('All') ? 'All' : selectedCategories.join(', ')"
+              outlined
+              style="margin-right: 10px;"
+            />
+          </template>
+          <v-card style="max-height: 300px; overflow-y: auto;">
+            <v-list>
+              <v-list-item>
+                <v-checkbox
+                  v-model="selectedCategories"
+                  :value="'All'"
+                  label="All"
+                  @change="handleAllCategorySelection"
+                  @click.stop
+                />
+              </v-list-item>
+              <v-list-item v-for="category in categories" :key="category">
+                <v-checkbox
+                  v-model="selectedCategories"
+                  :value="category"
+                  :label="category"
+                  @change="handleCategorySelection"
+                  @click.stop
+                />
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
 
-          <v-menu v-model="dateMenu" offset-y class="flex-grow-1">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
-                Date
-              </v-btn>
-            </template>
-            <v-card>
-              <v-list>
-                <v-list-item>
-                  <v-checkbox v-model="showAllDates" label="Show All Dates" @change="handleShowAllDatesChange" @click.stop />
-                </v-list-item>
-                <v-list-item>
-                  <!-- v-model should bind to a string (in YYYY-MM-DD format) -->
-                  <v-date-picker v-model="selectedDate" @input="handleDateChange"></v-date-picker>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
+    <!-- Date Filter -->
+    <v-menu v-model="dateMenu" offset-y class="flex-grow-1">
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
+          Date
+        </v-btn>
+      </template>
+      <v-card>
+        <v-list>
+          <v-list-item>
+            <v-checkbox v-model="showAllDates" label="Show All Dates" @change="handleShowAllDatesChange" @click.stop />
+          </v-list-item>
+          <v-list-item>
+            <!-- v-model should bind to a string (in YYYY-MM-DD format) -->
+            <v-date-picker v-model="selectedDate" @input="handleDateChange"></v-date-picker>
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-menu>
 
-          <v-btn
-            small
-            @click="resetFilters"
-            color="grey lighten-2"
-            style="margin-left: 10px;"
-          >
-            Reset
-          </v-btn>
-        </div>
-      </v-col>
-    </v-row>
+    <!-- Reset Button -->
+    <v-btn
+      small
+      @click="resetFilters"
+      color="grey lighten-2"
+      style="margin-left: 10px;"
+    >
+      Reset
+    </v-btn>
+  </v-col>
+</v-row>
 
     <!-- Updated Simple Table -->
     <v-simple-table class="aligned-table">
@@ -129,6 +137,8 @@
         <tr>
           <th style="width: 18%">Applicant Name</th>
           <th style="width: 15%">ID Card</th>
+          <th style="width: 15%">Email</th>
+
           <th style="width: 10%">Gender</th>
           <th style="width: 15%">Phone</th>
           <th style="width: 12%">Applied At</th>
@@ -145,6 +155,8 @@
         <tr v-for="application in filteredApplications" :key="application.application_id">
           <td>{{ application.applicant_name }}</td>
           <td>{{ application.identification_card }}</td>
+          <td>{{ application.seekeremail }}</td>
+
           <td>{{ application.gender }}</td>
           <td>{{ application.hp_number }}</td>
           <td>{{ new Date(application.applied_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</td> 
@@ -258,7 +270,7 @@ export default {
       locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak', 'Terengganu', 'Negeri Sembilan', 'Sarawak', 'Sabah'],
       locationMenu: false,
       selectedCategories: ["All"],
-      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'],
+      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant','Others'],
       categoryMenu: false,
       dateMenu: false,
       showAllDates: true,

@@ -9,7 +9,15 @@
           <v-card-text>
             <v-form @submit.prevent="createJob">
               <v-text-field v-model="job_name" label="Job Name" required outlined class="compact-text-field"></v-text-field>
-              <v-text-field v-model="job_category" label="Job Category" required outlined class="compact-text-field"></v-text-field>
+              <v-select 
+                  v-model="job_category" 
+                  :items="categories" 
+                  label="Job Category" 
+                  required 
+                  outlined 
+                  class="compact-text-field"
+                ></v-select>
+
               <v-text-field v-model="salary" label="Salary" required outlined class="compact-text-field"></v-text-field>
               <v-text-field v-model="working_place" label="Working Place" required outlined class="compact-text-field"></v-text-field>
               <v-text-field v-model="working_hours" label="Working Hours" required outlined class="compact-text-field"></v-text-field>
@@ -48,6 +56,11 @@ export default {
       job_description: '',
       phone_num: '',  // New phone number field
       userId: sessionStorage.getItem('userId') || '',  // Retrieve the user ID from sessionStorage
+      categories: [ 
+        'Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 
+        'Food & Beverage', 'Transportation', 'Marketing', 'Arts', 'Customer Service', 
+        'Human Resources', 'Accountant', 'Others'
+      ],  // List of job categories
     };
   },
   methods: {

@@ -3,7 +3,7 @@
     <!-- Search Box and Location Filter -->
     <div style="margin-top: 20px; padding: 0;">
     <v-row class="search-row no-vertical-spacing" align="center" >
-        <v-col cols="8" sm="6" style="padding: 0;">
+        <v-col cols="8" sm="5" style="padding: 0;">
           <v-text-field
             v-model="searchQuery"
             label="Search Job Name"
@@ -18,52 +18,58 @@
           </v-text-field>
         </v-col>
 
-        <v-col cols="3" sm="3">
-          <v-menu v-model="locationMenu" offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <v-text-field
-                v-bind="attrs"
-                v-on="on"
-                label="Filter by Location"
-                readonly
-                :value="selectedLocation.includes('All') ? 'All' : selectedLocation.join(', ')"
-                outlined
-              />
-            </template>
-            <v-card style="max-height: 300px; overflow-y: auto;">
-              <v-list>
-                <v-list-item>
-                  <v-checkbox
-                    v-model="selectedLocation"
-                    :value="'All'"
-                    label="All"
-                    @change="handleAllSelection"
-                    @click.stop
-                  />
-                </v-list-item>
-                <v-list-item v-for="location in locations" :key="location">
-                  <v-checkbox
-                    v-model="selectedLocation"
-                    :value="location"
-                    :label="location"
-                    @change="handleLocationSelection"
-                    @click.stop
-                  />
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
-        </v-col>
+          <!-- Location Filter -->
+          <v-col cols="3" sm="3">
+            <v-menu v-model="locationMenu" offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  v-bind="attrs"
+                  v-on="on"
+                  label="Filter by Location"
+                  readonly
+                  :value="selectedLocation.includes('All') ? 'All' : selectedLocation.join(', ')"
+                  outlined
+                />
+              </template>
+              <v-card style="max-height: 300px; overflow-y: auto;">
+                <v-list>
+                  <v-list-item>
+                    <v-checkbox
+                      v-model="selectedLocation"
+                      :value="'All'"
+                      label="All"
+                      @change="handleAllSelection"
+                      @click.stop
+                    />
+                  </v-list-item>
+                  <v-list-item v-for="location in locations" :key="location">
+                    <v-checkbox
+                      v-model="selectedLocation"
+                      :value="location"
+                      :label="location"
+                      @change="handleLocationSelection"
+                      @click.stop
+                    />
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+          </v-col>
 
-        <!-- Button Container for Category and Date Filters -->
-        <v-col cols="4" sm="3" class="d-flex justify-start" style="margin-top: -30px;">
-          <div class="d-flex flex-wrap align-center" style="flex-grow: 1;">
+          <!-- Category and Date Filters -->
+          <v-col cols="6" sm="4" class="d-flex align-center justify-space-between">
             <!-- Category Filter -->
             <v-menu v-model="categoryMenu" offset-y class="flex-grow-1">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-right: 10px;">
-                  Category
-                </v-btn>
+                <v-text-field
+                  v-bind="attrs"
+                  v-on="on"
+                  label="Filter by Category"
+                  readonly
+                  :value="selectedCategories.includes('All') ? 'All' : selectedCategories.join(', ')"
+                  outlined
+                  class="mr-3"
+                />
               </template>
               <v-card style="max-height: 300px; overflow-y: auto;">
                 <v-list>
@@ -90,7 +96,7 @@
             </v-menu>
 
             <!-- Date Filter -->
-            <v-menu v-model="dateMenu" offset-y class="flex-grow-1">
+            <v-menu v-model="dateMenu" offset-y>
               <template v-slot:activator="{ on, attrs }">
                 <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
                   Date
@@ -99,7 +105,7 @@
               <v-card>
                 <v-list>
                   <v-list-item>
-                    <v-checkbox v-model="showAllDates" label="Show All Dates"  @click.stop/>
+                    <v-checkbox v-model="showAllDates" label="Show All Dates" @click.stop />
                   </v-list-item>
                   <v-list-item>
                     <v-date-picker v-model="selectedDate" @input="showAllDates = false"></v-date-picker>
@@ -107,6 +113,7 @@
                 </v-list>
               </v-card>
             </v-menu>
+
             <!-- Reset Button -->
             <v-btn
               small
@@ -116,9 +123,8 @@
             >
               Reset
             </v-btn>
-          </div>
-        </v-col>
-      </v-row>
+          </v-col>
+        </v-row>
       </div>
 
     <v-simple-table class="aligned-table">
@@ -181,13 +187,14 @@
           <v-card-title>Edit Job</v-card-title>
           <v-card-text>
             <v-form>
-              <v-text-field v-model="editJobData.job_name" label="Job Name"></v-text-field>
-              <v-text-field v-model="editJobData.job_category" label="Category"></v-text-field>
-              <v-text-field v-model="editJobData.salary" label="Salary"></v-text-field>
-              <v-text-field v-model="editJobData.working_place" label="Working Place"></v-text-field>
-              <v-text-field v-model="editJobData.working_hours" label="Working Hours"></v-text-field>
-              <v-text-field v-model="editJobData.phone_num" label="Phone Number"></v-text-field>
-              <v-textarea v-model="editJobData.job_description" label="Job Description"></v-textarea>
+              <v-text-field v-model="editJobData.job_name" label="Job Name" required outlined class="compact-text-field" />
+              <v-select v-model="editJobData.job_category" :items="categories" label="Category" required outlined class="compact-text-field" />
+              <v-text-field v-model="editJobData.salary" label="Salary" required outlined class="compact-text-field" />
+              <v-text-field v-model="editJobData.working_place" label="Working Place" required outlined class="compact-text-field" />
+              <v-text-field v-model="editJobData.working_hours" label="Working Hours" required outlined class="compact-text-field" />
+              <v-text-field v-model="editJobData.phone_num" label="Phone Number" required outlined class="compact-text-field" />
+              <v-textarea v-model="editJobData.job_description" label="Job Description" outlined class="compact-text-field" />
+
             </v-form>
           </v-card-text>
           <v-card-actions>
@@ -203,13 +210,14 @@
           <v-card-title>Create Job</v-card-title>
           <v-card-text>
             <v-form>
-              <v-text-field v-model="newJob.job_name" label="Job Name"></v-text-field>
-              <v-text-field v-model="newJob.job_category" label="Category"></v-text-field>
-              <v-text-field v-model="newJob.salary" label="Salary"></v-text-field>
-              <v-text-field v-model="newJob.working_place" label="Working Place"></v-text-field>
-              <v-text-field v-model="newJob.working_hours" label="Working Hours"></v-text-field>
-              <v-text-field v-model="newJob.phone_num" label="Phone Number"></v-text-field>
-              <v-textarea v-model="newJob.job_description" label="Job Description"></v-textarea>
+              <v-text-field v-model="newJob.job_name" label="Job Name" required outlined class="compact-text-field" />
+              <v-select v-model="newJob.job_category" :items="categories" label="Category" required outlined class="compact-text-field" />
+              <v-text-field v-model="newJob.salary" label="Salary" required outlined class="compact-text-field" />
+              <v-text-field v-model="newJob.working_place" label="Working Place" required outlined class="compact-text-field" />
+              <v-text-field v-model="newJob.working_hours" label="Working Hours" required outlined class="compact-text-field" />
+              <v-text-field v-model="newJob.phone_num" label="Phone Number" required outlined class="compact-text-field" />
+              <v-textarea v-model="newJob.job_description" label="Job Description" outlined class="compact-text-field" />
+
             </v-form>
           </v-card-text>
           <v-card-actions>
@@ -264,7 +272,7 @@
         locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
         locationMenu: false, // State for location dropdown menu
         selectedCategories: ['All'], // Selected categories for filtering
-        categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+        categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant','Others'], // Available categories
         categoryMenu: false,
         dateMenu: false, // State for date dropdown menu
         showAllDates: true, // New property to check if all dates are shown
@@ -558,11 +566,7 @@
   padding: 0; /* Remove padding */
   margin: 0; /* Remove margin */
 }
-.custom-category-btn {
-  background: linear-gradient(45deg, #ff4081, #ff80ab); /* Fancy gradient color */
-  color: white !important;
-  border-radius: 8px;
-  }
+
 
 .custom-date-btn {
   background: linear-gradient(45deg, #ffd82c, #ffdf80); /* Fancy gradient color */

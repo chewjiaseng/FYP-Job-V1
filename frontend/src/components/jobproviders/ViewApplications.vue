@@ -10,7 +10,7 @@
     
     <!-- Search and Filters -->
     <v-row class="mb-4" align="center">
-      <v-col cols="8" sm="6">
+      <v-col cols="8" sm="5">
         <v-text-field
           v-model="searchQuery"
           label="Search Job Name"
@@ -62,68 +62,78 @@
         </v-menu>
       </v-col>
 
-      <v-col cols="4" sm="3" class="d-flex justify-start" style="margin-top: -30px;">
-        <div class="d-flex flex-wrap align-center" style="flex-grow: 1;">
-          <v-menu v-model="categoryMenu" offset-y class="flex-grow-1">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-right: 10px;">
-                Category
-              </v-btn>
-            </template>
-            <v-card style="max-height: 300px; overflow-y: auto;">
-              <v-list>
-                <v-list-item>
-                  <v-checkbox
-                    v-model="selectedCategories"
-                    :value="'All'"
-                    label="All"
-                    @change="handleAllCategorySelection"
-                    @click.stop
-                  />
-                </v-list-item>
-                <v-list-item v-for="category in categories" :key="category">
-                  <v-checkbox
-                    v-model="selectedCategories"
-                    :value="category"
-                    :label="category"
-                    @change="handleCategorySelection"
-                    @click.stop
-                  />
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
+      <!-- Category Filter -->
+  <v-col cols="3" sm="2">
+    <v-menu v-model="categoryMenu" offset-y>
+      <template v-slot:activator="{ on, attrs }">
+        <v-text-field
+          v-bind="attrs"
+          v-on="on"
+          label="Filter by Category"
+          readonly
+          :value="selectedCategories.includes('All') ? 'All' : selectedCategories.join(', ')"
+          outlined
+        />
+      </template>
+      <v-card style="max-height: 300px; overflow-y: auto;">
+        <v-list>
+          <v-list-item>
+            <v-checkbox
+              v-model="selectedCategories"
+              :value="'All'"
+              label="All"
+              @change="handleAllCategorySelection"
+              @click.stop
+            />
+          </v-list-item>
+          <v-list-item v-for="category in categories" :key="category">
+            <v-checkbox
+              v-model="selectedCategories"
+              :value="category"
+              :label="category"
+              @change="handleCategorySelection"
+              @click.stop
+            />
+          </v-list-item>
+        </v-list>
+      </v-card>
+    </v-menu>
+  </v-col>
 
-          <v-menu v-model="dateMenu" offset-y class="flex-grow-1">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
-                Date
-              </v-btn>
-            </template>
-            <v-card>
-              <v-list>
-                <v-list-item>
-                  <v-checkbox v-model="showAllDates" label="Show All Dates" @change="handleShowAllDatesChange" @click.stop />
-                </v-list-item>
-                <v-list-item>
-                  <!-- v-model should bind to a string (in YYYY-MM-DD format) -->
-                  <v-date-picker v-model="selectedDate" @input="handleDateChange"></v-date-picker>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
-
-          <v-btn
-            small
-            @click="resetFilters"
-            color="grey lighten-2"
-            style="margin-left: 10px;"
-          >
-            Reset
+  <!-- Date and Reset Buttons -->
+  <v-col cols="auto" sm="auto" class="d-flex justify-start">
+    <div class="d-flex flex-wrap align-center">
+      <!-- Date Filter -->
+      <v-menu v-model="dateMenu" offset-y>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
+            Date
           </v-btn>
-        </div>
-      </v-col>
-    </v-row>
+        </template>
+        <v-card>
+          <v-list>
+            <v-list-item>
+              <v-checkbox v-model="showAllDates" label="Show All Dates" @click.stop />
+            </v-list-item>
+            <v-list-item>
+              <v-date-picker v-model="selectedDate" @input="showAllDates = false"></v-date-picker>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
+
+      <!-- Reset Button -->
+      <v-btn
+        small
+        @click="resetFilters"
+        color="grey lighten-2"
+        style="margin-left: 10px;"
+      >
+        Reset
+      </v-btn>
+    </div>
+  </v-col>
+</v-row>
 
     <v-data-table
       :headers="headers"
@@ -136,6 +146,8 @@
         <tr>
           <td style="text-align: left;">{{ item.applicant_name }}</td>
           <td style="text-align: left;">{{ item.identification_card }}</td>
+          <td style="text-align: left;">{{ item.seekeremail }}</td> <!-- Display seekeremail here -->
+
           <td style="text-align: left;">{{ item.gender }}</td>
           <td style="text-align: left;">{{ item.hp_number }}</td>
           <td style="text-align: left;">{{ new Date(item.applied_at).toLocaleDateString() }}</td>
@@ -236,6 +248,8 @@ export default {
       headers: [
         { text: 'Applicant Name', value: 'applicant_name' },
         { text: 'ID Card', value: 'identification_card' },
+        { text: 'Email', value: 'seekeremail' },
+
         { text: 'Gender', value: 'gender' },
         { text: 'Phone Number', value: 'hp_number' },
         { text: 'Applied At', value: 'applied_at' },

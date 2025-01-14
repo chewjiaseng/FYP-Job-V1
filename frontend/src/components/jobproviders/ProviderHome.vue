@@ -1,7 +1,7 @@
 <template>
   <v-container class="custom-container khaki-background">
     <v-card class="pa-4 mb-6 khaki-card">
-      <h1 class="text-h4 mb-4">Welcome, {{ username }} (ID: {{ userId }})</h1>
+      <h1 class="text-h4 mb-4">Welcome {{ username }} </h1>
 
       <!-- Action Buttons -->
       <div class="action-buttons mb-4">
@@ -15,7 +15,7 @@
 
        <!-- Search Box and Location Filter -->
       <v-row class="mb-4" align="center">
-        <v-col cols="8" sm="6">
+        <v-col cols="8" sm="5">
           <v-text-field
             v-model="searchQuery"
             label="Search Job Name"
@@ -67,42 +67,49 @@
           </v-menu>
         </v-col>
 
-        <!-- Button Container for Category and Date Filters -->
-        <v-col cols="4" sm="3" class="d-flex justify-start" style="margin-top: -30px;">
-          <div class="d-flex flex-wrap align-center" style="flex-grow: 1;">
-            <!-- Category Filter -->
-            <v-menu v-model="categoryMenu" offset-y class="flex-grow-1">
-              <template v-slot:activator="{ on, attrs }">
-                <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-right: 10px;">
-                  Category
-                </v-btn>
-              </template>
-              <v-card style="max-height: 300px; overflow-y: auto;">
-                <v-list>
-                  <v-list-item>
-                    <v-checkbox
-                      v-model="selectedCategories"
-                      :value="'All'"
-                      label="All"
-                      @change="handleAllCategorySelection"
-                      @click.stop
-                    />
-                  </v-list-item>
-                  <v-list-item v-for="category in categories" :key="category">
-                    <v-checkbox
-                      v-model="selectedCategories"
-                      :value="category"
-                      :label="category"
-                      @change="handleCategorySelection"
-                      @click.stop
-                    />
-                  </v-list-item>
-                </v-list>
-              </v-card>
-            </v-menu>
+        <!-- Category Filter -->
+        <v-col cols="3" sm="2">
+          <v-menu v-model="categoryMenu" offset-y>
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-bind="attrs"
+                v-on="on"
+                label="Filter by Category"
+                readonly
+                :value="selectedCategories.includes('All') ? 'All' : selectedCategories.join(', ')"
+                outlined
+              />
+            </template>
+            <v-card style="max-height: 300px; overflow-y: auto;">
+              <v-list>
+                <v-list-item>
+                  <v-checkbox
+                    v-model="selectedCategories"
+                    :value="'All'"
+                    label="All"
+                    @change="handleAllCategorySelection"
+                    @click.stop
+                  />
+                </v-list-item>
+                <v-list-item v-for="category in categories" :key="category">
+                  <v-checkbox
+                    v-model="selectedCategories"
+                    :value="category"
+                    :label="category"
+                    @change="handleCategorySelection"
+                    @click.stop
+                  />
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+        </v-col>
 
+        <!-- Date and Reset Buttons -->
+        <v-col cols="auto" sm="auto" class="d-flex justify-start">
+          <div class="d-flex flex-wrap align-center">
             <!-- Date Filter -->
-            <v-menu v-model="dateMenu" offset-y class="flex-grow-1">
+            <v-menu v-model="dateMenu" offset-y>
               <template v-slot:activator="{ on, attrs }">
                 <v-btn color="custom-date-btn" v-bind="attrs" v-on="on" style="min-width: 100px;">
                   Date
@@ -111,7 +118,7 @@
               <v-card>
                 <v-list>
                   <v-list-item>
-                    <v-checkbox v-model="showAllDates" label="Show All Dates"  @click.stop/>
+                    <v-checkbox v-model="showAllDates" label="Show All Dates" @click.stop />
                   </v-list-item>
                   <v-list-item>
                     <v-date-picker v-model="selectedDate" @input="showAllDates = false"></v-date-picker>
@@ -119,6 +126,7 @@
                 </v-list>
               </v-card>
             </v-menu>
+
             <!-- Reset Button -->
             <v-btn
               small
@@ -190,8 +198,14 @@
         <v-card-text>
           <v-form>
             <v-text-field v-model="editedJob.job_name" label="Job Name" outlined></v-text-field>
-            <v-text-field v-model="editedJob.job_category" label="Job Category" outlined></v-text-field>
-            <v-text-field v-model="editedJob.salary" label="Salary" outlined></v-text-field>
+            <v-select 
+                  v-model="editedJob.job_category" 
+                  :items="categories" 
+                  label="Job Category" 
+                  required 
+                  outlined 
+                  class="compact-text-field"
+                ></v-select>            <v-text-field v-model="editedJob.salary" label="Salary" outlined></v-text-field>
             <v-text-field v-model="editedJob.working_place" label="Working Place" outlined></v-text-field>
             <v-text-field v-model="editedJob.working_hours" label="Working Hours" outlined></v-text-field>
             <v-textarea v-model="editedJob.job_description" label="Job Description" rows="2" outlined></v-textarea>
@@ -239,7 +253,7 @@ export default {
       locations: ['Johor', 'Selangor', 'Melaka', 'Kuala Lumpur', 'Pahang', 'Pulau Pinang', 'Kelantan', 'Kedah', 'Perlis', 'Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
       locationMenu: false, // State for location dropdown menu
       selectedCategories: ['All'], // Selected categories for filtering
-      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Transportation','Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+      categories: ['Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage', 'Transportation','Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant','Others'], // Available categories
       categoryMenu: false,
       dateMenu: false, // State for date dropdown menu
       showAllDates: true, // New property to check if all dates are shown
