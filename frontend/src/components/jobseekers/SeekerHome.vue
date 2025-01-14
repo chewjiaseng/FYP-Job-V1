@@ -24,7 +24,7 @@
         </v-col>
 
         <!-- This is for the filter location -->
-        <v-col cols="12" sm="4">
+        <v-col cols="12" sm="3">
         <v-menu v-model="locationMenu" offset-y>
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
@@ -63,15 +63,20 @@
       </v-col>
 
         <!-- Spacer to push buttons to the right -->
-        <v-spacer />
 
         <!-- This is for the filter category -->
-        <v-col cols="auto" class="pr-2">
+        <v-col cols="12" sm="3">
           <v-menu v-model="categoryMenu" offset-y>
             <template v-slot:activator="{ on, attrs }">
-              <v-btn color="custom-category-btn" v-bind="attrs" v-on="on" style="min-width: 100px; margin-top: -25px;">
-                Category
-              </v-btn>
+              <v-text-field
+                v-bind="attrs"
+                v-on="on"
+                label="Filter by Category"
+                readonly
+                :value="selectedCategories.includes('All') ? 'All' : selectedCategories.join(', ')"
+                class="custom-text-field"
+                outlined
+              />
             </template>
             <v-card style="max-height: 300px; overflow-y: auto;">
               <v-list>
@@ -147,10 +152,11 @@
         <v-card-title>Apply for Job</v-card-title>
         <v-card-text>
           <v-form ref="applyForm">
-            <v-text-field v-model="application.name" label="Name" required></v-text-field>
-            <v-text-field v-model="application.identification_card" label="Identification Card" required></v-text-field>
+            <v-text-field v-model="application.name" label="Full Name" required></v-text-field>
+            <v-text-field v-model="application.identification_card" label="Identification Card / Passport Number" required></v-text-field>
+            <v-text-field v-model="application.seekeremail" label="Email Address" required></v-text-field> <!-- New email field -->
             <v-select v-model="application.gender" :items="['Male', 'Female']" label="Gender" required></v-select>
-            <v-text-field v-model="application.hp_number" label="HP Number" required></v-text-field>
+            <v-text-field v-model="application.hp_number" label="Phone Number" required></v-text-field>
             <v-file-input v-model="application.resume_pdf" label="Upload Resume (optional)" accept=".pdf" prepend-icon="mdi-paperclip"></v-file-input>
           </v-form>
         </v-card-text>
@@ -200,7 +206,7 @@ export default {
       },
       selectedCategories: ['All'], // Selected categories for filtering
       allSelected: false, // Track if 'All' is selected
-      categories: [ 'Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant'], // Available categories
+      categories: [ 'Education', 'Designer', 'Sales', 'Finance', 'Information Technology', 'Food & Beverage','Transportation', 'Marketing', 'Arts', 'Customer Service', 'Human Resources', 'Accountant','Others'], // Available categories
       searchText: '', // Search text for job names
       selectedLocation: ['All'], // Selected location for filtering
       locations: ['Johor', 'Selangor', 'Melaka','Kuala Lumpur','Pahang','Pulau Pinang','Kelantan','Kedah','Perlis','Perak','Terengganu','Negeri Sembilan','Sarawak','Sabah'], // Available locations
@@ -387,6 +393,7 @@ export default {
       formData.append('identification_card', this.application.identification_card);
       formData.append('gender', this.application.gender);
       formData.append('hp_number', this.application.hp_number);
+      formData.append('seekeremail', this.application.seekeremail);  // Add email to formData
       if (this.application.resume_pdf) {
         formData.append('resume_pdf', this.application.resume_pdf);
       }

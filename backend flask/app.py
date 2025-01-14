@@ -170,6 +170,7 @@ class Application(db.Model):
     applied_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), nullable=False)
     status = db.Column(db.String(50), nullable=False, default='Pending')
     job = db.relationship('Job', backref='applications', lazy=True)
+    seekeremail = db.Column(db.String(255), nullable=False)  # Adding the new column
 
 # Load models for prediction
 rf_classifier_categorization = pickle.load(open('models/rf_classifier_categorization.pkl', 'rb'))
@@ -306,6 +307,16 @@ def signup():
     if not username or not email or not password:
         return jsonify({"error": "Please fill out all required fields."}), 400
 
+    # Check if the username already exists
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"error": "Username already taken. Please choose a different username."}), 400
+
+    # Check if the email already exists
+    existing_email = User.query.filter_by(email=email).first()
+    if existing_email:
+        return jsonify({"error": "Email already in use. Please choose a different email."}), 400
+
     # Encrypt the password
     encrypted_password = cipher_suite.encrypt(password.encode()).decode()
 
@@ -322,6 +333,7 @@ def signup():
         db.session.rollback()
         app.logger.error(f"Error occurred during signup: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -586,6 +598,8 @@ def apply():
         'identification_card': request.form.get('identification_card'),
         'gender': request.form.get('gender'),
         'hp_number': request.form.get('hp_number'),
+        'seekeremail': request.form.get('seekeremail')  # Capture email from form data
+
     }
 
     if not all(data.values()):
@@ -605,6 +619,7 @@ def apply():
         identification_card=data['identification_card'],
         gender=data['gender'],
         hp_number=data['hp_number'],
+        seekeremail=data['seekeremail'],  # Include email here
         resume_pdf=resume_pdf_content,  # Can be None if no PDF is uploaded
         applied_at=malaysia_time  # Set the Malaysia time when the application is made
 
@@ -712,7 +727,9 @@ def get_provider_applications():
             j.job_category,
             j.working_place,
             u.username AS job_provider_name,
-            a.resume_pdf
+            a.resume_pdf,
+            a.seekeremail  -- Add seekeremail here
+
         FROM 
             applications a
         JOIN 
@@ -776,6 +793,13 @@ def update_user(username):
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
+    # Check if the new email is already in use by another user
+    new_email = user_data.get('email')
+    if new_email and new_email != user.email:
+        existing_email = User.query.filter_by(email=new_email).first()
+        if existing_email:
+            return jsonify({'error': 'Email already in use. Please choose a different email.'}), 400
+
     # Update fields
     user.email = user_data.get('email', user.email)
 
@@ -814,7 +838,9 @@ def get_all_applications():
             j.job_category,
             j.working_place,
             u.username AS job_provider_name,
-            a.resume_pdf
+            a.resume_pdf,
+            a.seekeremail  -- Add seekeremail here
+
         FROM 
             applications a
         JOIN 
@@ -856,6 +882,7 @@ def update_application(application_id):
         # Update the application fields
         application.name = request.form.get('name', application.name)
         application.identification_card = request.form.get('identification_card', application.identification_card)
+        application.seekeremail = request.form.get('seekeremail', application.seekeremail)
         application.gender = request.form.get('gender', application.gender)
         application.hp_number = request.form.get('hp_number', application.hp_number)
         application.status = request.form.get('status', application.status)
@@ -934,6 +961,7 @@ def check_current_applications():
             "job_name": application.job.job_name,  # Assuming you have a job related to the application
             "name": application.name,  # Applicant's name
             "identification_card": application.identification_card,
+            "seekeremail":application.seekeremail,
             "gender": application.gender,
             "hp_number": application.hp_number,
             "applied_at": application.applied_at.strftime("%Y-%m-%d %H:%M:%S"),

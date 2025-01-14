@@ -60,6 +60,11 @@
         <v-btn text class="already-account" @click="goToLogin">
           Already have an account? Log In
         </v-btn>
+
+        <!-- Error Message -->
+        <v-alert v-if="errorMessage" type="error" dismissible>
+          {{ errorMessage }}
+        </v-alert>
       </v-col>
     </v-row>
   </v-container>
@@ -83,6 +88,7 @@ export default {
       selectedRole: '',
       showPassword: false,
       loading: false,
+      errorMessage: '',  // To store error messages
     };
   },
   methods: {
@@ -90,37 +96,43 @@ export default {
       this.showPassword = !this.showPassword;
     },
     async register() {
-      if (!this.username || !this.email || !this.password || !this.selectedRole) {
-        alert('Please fill in all fields');
-        return;
-      }
+  // Reset error message before starting the registration process
+  this.errorMessage = '';
 
-      this.loading = true;
+  if (!this.username || !this.email || !this.password || !this.selectedRole) {
+    alert('Please fill in all fields');
+    return;
+  }
 
-      const payload = {
-        username: this.username,
-        email: this.email,
-        password: this.password,
-        role: this.selectedRole,
-      };
+  this.loading = true;
 
-      const apiUrl = process.env.VUE_APP_API_URL;
+  const payload = {
+    username: this.username,
+    email: this.email,
+    password: this.password,
+    role: this.selectedRole,
+  };
 
-      try {
-        const response = await axios.post(`${apiUrl}/signup`, payload);
-        if (response.data.success) {
-          alert('Registration successful');
-          this.clearForm();
-        } else {
-          alert(response.data.message || 'Registration failed');
-        }
-      } catch (error) {
-        console.error('Error during registration:', error);
-        alert('An error occurred. Please try again later.');
-      } finally {
-        this.loading = false;
-      }
-    },
+  const apiUrl = process.env.VUE_APP_API_URL;
+
+  try {
+    const response = await axios.post(`${apiUrl}/signup`, payload);
+    
+    if (response.data.success) {
+      alert('Registration successful');
+      this.clearForm();
+    } else {
+      // Show error message from backend response
+      this.errorMessage = response.data.error || 'Registration failed';
+    }
+  } catch (error) {
+    console.error('Error during registration:', error);
+    // If there's an error, show the message returned from the backend
+    this.errorMessage = error.response?.data?.error || 'An error occurred. Please try again later.';
+  } finally {
+    this.loading = false;
+  }
+},
     clearForm() {
       this.username = '';
       this.email = '';
@@ -203,6 +215,5 @@ export default {
   background-position: center; /* Center the image */
   background-repeat: no-repeat; /* Prevent the image from repeating */
 }
-
 
 </style>

@@ -3,7 +3,7 @@
     <!-- Welcome Message -->
     <v-row align="center" justify="center" style="height: auto;">
       <v-col class="text-center">
-        <h1>Welcome, {{ username }} (ID: {{ userId }})</h1>
+        <h1>Welcome, {{ username }} </h1>
       </v-col>
     </v-row>
 

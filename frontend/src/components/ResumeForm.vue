@@ -9,12 +9,11 @@
           <v-card-text>
             <p style="color: #34495e; font-size: 16px; font-family: 'Roboto', sans-serif; line-height: 1.6;">This system supports TXT and PDF files to be uploaded and will work on the following:</p>
             
-            <!-- Replace v-list with ul and li -->
-            <ul style="padding-left: 20px; color:  black; font-size: 15px; list-style-type: disc; font-family: 'Roboto', sans-serif;">
-              <li>Resume Job Categorization</li>
-              <li>Resume Job Recommendation</li>
-            </ul>
-            
+            <div style="text-align: center; color: black; font-size: 15px; font-family: 'Roboto', sans-serif;">
+              <div style="margin-bottom: 10px;">Resume Job Categorization</div>
+              <div>Resume Job Recommendation</div>
+            </div>
+
           </v-card-text>
         </v-card>
 
@@ -63,12 +62,14 @@
               </v-card-title>
               <v-card-subtitle>{{ job.job_category }}</v-card-subtitle>
               <v-card-text>
+                <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
                 <p class="job-detail left-align"><strong>Place:</strong> {{ job.working_place }}</p>
                 <p class="job-detail left-align"><strong>Hours:</strong> {{ job.working_hours }}</p>
-                <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Description:</strong> {{ job.job_description }}</p>
                 <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Created At:</strong> {{ new Date(job.created_at).toLocaleDateString('en-GB', { timeZone: 'UTC' }) }}</p>
                 <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Provider:</strong> {{ job.provider_name }}</p>
                 <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Contact:</strong> {{ job.phone_num }}</p>
+                <p class="job-detail left-align" v-if="isExpanded(job.id)"><strong>Salary Range:</strong> {{ job.salary }}</p>
+
                 <v-btn
                   text
                   @click="toggleExpand(job.id)"
@@ -95,15 +96,17 @@
             <v-card-title>Apply for Job</v-card-title>
             <v-card-text>
               <v-form ref="applyForm">
-                <v-text-field v-model="application.name" label="Name" required></v-text-field>
-                <v-text-field v-model="application.identification_card" label="Identification Card" required></v-text-field>
+                <v-text-field v-model="application.name" label="Full Name" required></v-text-field>
+                <v-text-field v-model="application.identification_card" label="Identification Card / Passport Number" required></v-text-field>
+                <v-text-field v-model="application.seekeremail" label="Email Address" required></v-text-field> <!-- New email field -->
+
                 <v-select
                   v-model="application.gender"
                   :items="['Male', 'Female']"
                   label="Gender"
                   required
                 ></v-select>
-                <v-text-field v-model="application.hp_number" label="HP Number" required></v-text-field>
+                <v-text-field v-model="application.hp_number" label="Phone Number" required></v-text-field>
                 <v-file-input
                   v-model="application.resume_pdf"
                   label="Upload Resume (optional)"
@@ -283,6 +286,7 @@ export default {
       formData.append('job_id', this.selectedJobId);
       formData.append('name', this.application.name);
       formData.append('identification_card', this.application.identification_card);
+      formData.append('seekeremail', this.application.seekeremail);
       formData.append('gender', this.application.gender);
       formData.append('hp_number', this.application.hp_number);
       if (this.application.resume_pdf) {

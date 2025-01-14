@@ -13,21 +13,24 @@
     <v-simple-table class="aligned-table">
       <thead>
         <tr>
-          <th style="width: 15%">Applicant Name</th>
-          <th style="width: 15%">ID Card</th>
+          <th style="width: 17%">Applicant Name</th>
+          <th style="width: 17%">ID Card</th>
+          <th style="width: 17%">Email</th>
           <th style="width: 10%">Gender</th>
           <th style="width: 15%">Phone</th>
-          <th style="width: 12%">Applied At</th>
+          <th style="width: 10%">Applied At</th>
           <th style="width: 18%">Job Name</th>
-          <th style="width: 12%">Status</th>
-          <th style="width: 12%">Resume Status</th>
-          <th style="width: 12%">Actions</th> 
+          <th style="width: 10%">Status</th>
+          <th style="width: 10%">Resume Status</th>
+          <th style="width: 10%">Actions</th> 
         </tr>
       </thead>
       <tbody>
         <tr v-for="(application, index) in applications" :key="index">
           <td>{{ application.name }}</td>
           <td>{{ application.identification_card }}</td>
+          <td>{{ application.seekeremail }}</td>
+
           <td>{{ application.gender }}</td>
           <td>{{ application.hp_number }}</td>
           <td>{{ new Date(application.applied_at).toLocaleDateString() }}</td>

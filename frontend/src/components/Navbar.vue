@@ -14,7 +14,7 @@
           <v-btn text class="custom-button" to="/job-search">Job Seeker</v-btn>
           <v-btn text class="custom-button" to="/job-provide">Job Provider</v-btn>
           <!-- <v-btn text class="custom-button" to="/about-us">About Us</v-btn> -->
-          <v-btn text class="custom-button" to="/login">Login</v-btn>
+          <v-btn text class="custom-button" to="/login">Login / Register</v-btn>
         </v-col>
 
         <!-- Mobile Hamburger Menu for smaller screens -->
