@@ -21,6 +21,12 @@
                 <span>User ID: {{ userId }}</span>
               </v-chip>
 
+               <!-- Display success message if it exists -->
+              <div v-if="message" class="success-banner">
+                {{ message }}
+              </div>
+
+
               <!-- Button Container -->
               <div class="button-container">
                 <v-btn @click="goBack" class="back-button" color="blue">Back</v-btn>
@@ -48,6 +54,8 @@ export default {
       job_description: '',
       phone_num: '',  // New phone number field
       userId: sessionStorage.getItem('userId') || '',  // Retrieve the user ID from sessionStorage
+      message: '', // Add this to store success or error messages
+
     };
   },
   methods: {
@@ -58,7 +66,7 @@ export default {
     if (!this.job_name || !this.job_category || !this.salary || 
         !this.working_place || !this.working_hours || !this.job_description) {
       this.loading = false; // Reset loading state
-      alert('Please fill in the information!'); // Display alert
+      this.message = 'Please fill in the information!'; // Set the error message to be displayed
       return; // Prevent further execution
     }
 
@@ -96,8 +104,8 @@ export default {
       })
       .then((data) => {
         if (data.message) {
-          alert('Job created successfully!');
-          this.$router.push('/provider-home');
+          this.message = 'Job created successfully!'; // Set success message
+          // this.$router.push('/provider-home');
         } else {
           alert('Error creating job: ' + data.error);
         }

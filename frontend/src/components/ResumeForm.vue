@@ -227,7 +227,7 @@ export default {
             this.message = '';  // Clear any previous messages
           } else {
             this.jobs = [];  // Clear the jobs list if no jobs are found
-            this.message = response.data.message || "No jobs found.";
+            // this.message = response.data.message || "No jobs found.";
           }
         }
       } catch (error) {

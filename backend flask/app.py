@@ -87,7 +87,7 @@ login_manager.init_app(app)
 login_manager.login_view = '/login'  # Redirect to login if not authenticated
 
 # Database connection external URI
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://databasefyp2_user:bbQbNiZHBSrP4WG2Z0B4aokaBilNQABx@dpg-ctf691ogph6c73fk9140-a.oregon-postgres.render.com/databasefyp2'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://newdatabase3_user:vCL1hslQYuhs1eK27oGwgYZccF6VqOkd@dpg-cu2e02jv2p9s738rs5p0-a.oregon-postgres.render.com/newdatabase3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize SQLAlchemy
@@ -305,6 +305,16 @@ def signup():
 
     if not username or not email or not password:
         return jsonify({"error": "Please fill out all required fields."}), 400
+
+    # Check if the username already exists
+    existing_user = User.query.filter_by(username=username).first()
+    if existing_user:
+        return jsonify({"error": "Username already taken. Please choose a different username."}), 400
+
+    # Check if the email already exists
+    existing_email = User.query.filter_by(email=email).first()
+    if existing_email:
+        return jsonify({"error": "Email already in use. Please choose a different email."}), 400
 
     # Encrypt the password
     encrypted_password = cipher_suite.encrypt(password.encode()).decode()
