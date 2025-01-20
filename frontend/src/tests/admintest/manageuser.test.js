@@ -1,8 +1,9 @@
 import { mount, flushPromises } from '@vue/test-utils';
 import { vi } from 'vitest';
 import axios from 'axios';
-import Vuetify from 'vuetify';
 import { createVuetify } from 'vuetify'; // Vuetify v3
+import 'vuetify/styles';
+
 import ManageUserData from '@/components/admin/ManageUserData.vue';
 
 // Mock axios
@@ -21,35 +22,48 @@ describe('ManageUserData.vue', () => {
       },
     });
 
-    // Mock fetchUsers to prevent API call
-    vi.spyOn(wrapper.vm, 'fetchUsers').mockImplementation(() => {});
+    // Mock fetchUsers to prevent actual API calls
+    vi.spyOn(wrapper.vm, 'fetchUsers').mockResolvedValue();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks(); // Restore original implementations after each test
   });
 
   it('displays success message in snackbar on successful user creation', async () => {
-    // Mock axios.post to resolve as success
+    // Mock axios.post to resolve successfully
     axios.post.mockResolvedValueOnce({ data: { success: true } });
 
-    // Trigger addUser method
-    await wrapper.vm.addUser(); // Wait for promise resolution
-    await flushPromises(); // Ensure async promises are flushed
+    // Call addUser
+    await wrapper.vm.addUser();
+    await flushPromises();
 
-    // Check that the snackbar displays the success message
+    // Assertions
     expect(wrapper.vm.snackbarText).toBe('User added successfully');
     expect(wrapper.vm.snackbarType).toBe('success');
     expect(wrapper.vm.snackbar).toBe(true);
+    expect(wrapper.vm.dialogAddUser).toBe(false); // Ensure dialog closes
+    expect(wrapper.vm.fetchUsers).toHaveBeenCalled(); // Verify fetchUsers was called
   });
 
   it('displays error message in snackbar when user creation fails', async () => {
     // Mock axios.post to reject with an error
-    axios.post.mockRejectedValueOnce(new Error('Failed to create user'));
+    const mockError = {
+      response: {
+        data: { error: 'Backend error message' },
+      },
+    };
+    axios.post.mockRejectedValueOnce(mockError);
 
-    // Trigger addUser method
-    await wrapper.vm.addUser(); // Wait for promise resolution
-    await flushPromises(); // Ensure async promises are flushed
+    // Call addUser
+    await wrapper.vm.addUser();
+    await flushPromises();
 
-    // Check that the snackbar displays the error message
-    expect(wrapper.vm.snackbarText).toBe('Failed to add user');
+    // Assertions
+    expect(wrapper.vm.snackbarText).toBe('Backend error message');
     expect(wrapper.vm.snackbarType).toBe('error');
     expect(wrapper.vm.snackbar).toBe(true);
   });
+
+  
 });

@@ -194,25 +194,23 @@ export default {
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword;
     },
-    fetchUsers() {
-      this.loading = true;  // Start loading
-      const apiUrl = process.env.VUE_APP_API_URL;
-      axios
-        .get(`${apiUrl}/users`, { withCredentials: true })
-        .then((response) => {
-          this.users = response.data;
-          this.loading = false;  // Stop loading after the request is done
+    async fetchUsers() {
+  this.loading = true; // Start loading
+  const apiUrl = process.env.VUE_APP_API_URL;
 
-        })
-        .catch((error) => {
-          this.snackbarText = 'Error fetching users';
-          this.snackbarType = 'error';
-          this.snackbar = true;
-          console.error(error);
-          this.loading = false;  // Stop loading after the request is done
-
-        });
-    },
+  try {
+    const response = await axios.get(`${apiUrl}/users`, { withCredentials: true });
+    this.users = response.data; // Update users with response data
+  } catch (error) {
+    this.snackbarText = 'Error fetching users';
+    this.snackbarType = 'error';
+    this.snackbar = true;
+    console.error(error);
+  } finally {
+    this.loading = false; // Stop loading after the request is done
+  }
+}
+,
     goBack() {
       this.$router.push('/admin-home'); // Adjust the path as needed
     },
@@ -275,34 +273,35 @@ export default {
           this.loading = false;
         });
     },
-    addUser() {
-    this.loading = true;
-    const apiUrl = process.env.VUE_APP_API_URL;
-    axios.post(`${apiUrl}/signup`, this.newUser, { withCredentials: true })
-      .then((response) => {
-        this.snackbarText = 'User added successfully';
-        this.snackbarType = 'success';
-        this.snackbar = true;
-        this.dialogAddUser = false;
-        this.fetchUsers(); // Refresh user list
-      })
-      .catch((error) => {
-        // Handle errors
-        if (error.response && error.response.data && error.response.data.error) {
-            // Show backend error message
-            this.snackbarText = error.response.data.error;
-          } else {
-            // Generic error message
-            this.snackbarText = 'Failed to add user';
-          }
-          this.snackbarType = 'error';
-          this.snackbar = true;
-          console.error(error);
-      })
-      .finally(() => {
-        this.loading = false;
-      });
+    async addUser() {
+  this.loading = true;
+  const apiUrl = process.env.VUE_APP_API_URL;
+
+  try {
+    const response = await axios.post(`${apiUrl}/signup`, this.newUser, { withCredentials: true });
+    this.snackbarText = 'User added successfully';
+    this.snackbarType = 'success';
+    this.snackbar = true;
+    this.dialogAddUser = false;
+
+    await this.fetchUsers(); // Refresh user list
+  } catch (error) {
+    // Handle errors
+    if (error.response && error.response.data && error.response.data.error) {
+      // Show backend error message
+      this.snackbarText = error.response.data.error;
+    } else {
+      // Generic error message
+      this.snackbarText = 'Failed to add user';
+    }
+    this.snackbarType = 'error';
+    this.snackbar = true;
+    console.error(error);
+  } finally {
+    this.loading = false;
   }
+}
+
   },
   created() {
     this.fetchUsers(); // Fetch users when component is created
